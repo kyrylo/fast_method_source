@@ -6,7 +6,7 @@ Description
 -----------
 
 Fast Method Source is an extension for quering methods for their source code and
-comments.
+comments. Additionally, it supports Procs and lambdas.
 
 ```ruby
 require 'fast_method_source'
@@ -82,6 +82,54 @@ Output.
               #{additional_setup_code}
               #{local_variable_name}.#{attribute} = #{new_value_variable_name}
             end
+```
+
+API
+---
+
+The library provides two methods `#source` and `#comment`. There are two ways to
+use Fast Method Source. One way is to monkey-patch default Ruby classes and use
+these methods directly.
+
+```ruby
+require 'fast_method_source'
+require 'fast_method_source/core_ext'
+
+# With UnboundMethod
+Set.instance_method(:merge).source
+#=> "  def merge(enum)\n..."
+
+# With Method
+Set.method(:[]).source
+#=> "  def self.[](*ary)\n..."
+
+# With Proc (or lambda)
+myproc = proc { |arg|
+  arg + 1
+}
+myproc.source
+#=> "myproc = proc { |arg|\n..."
+```
+
+The other way is by using these methods accessing the library directly.
+
+```
+require 'fast_method_source'
+
+# With UnboundMethod
+FastMethodSource.source_for(Set.instance_method(:merge))
+#=> "  def merge(enum)\n..."
+
+# With Method
+FastMethodSource.source_for(Set.method(:[]))
+#=> "  def self.[](*ary)\n..."
+
+# With Proc (or lambda)
+myproc = proc { |arg|
+  arg + 1
+}
+FastMethodSource.source_for(myproc)
+#=> "myproc = proc { |arg|\n..."
 ```
 
 Limitations
