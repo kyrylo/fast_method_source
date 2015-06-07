@@ -13,9 +13,11 @@ require 'fast_method_source'
 require 'set'
 
 puts Set.instance_method(:merge).source
+```
 
-# Returns
-=begin
+Output.
+
+```
   def merge(enum)
     if enum.instance_of?(self.class)
       @hash.update(enum.instance_variable_get(:@hash))
@@ -25,7 +27,6 @@ puts Set.instance_method(:merge).source
 
     self
   end
-=end
 ```
 
 Installation
@@ -70,16 +71,17 @@ require 'fast_method_source'
 require 'rss'
 
 puts RSS::Maker::ChannelBase.instance_method(:dc_description=).source
+```
 
-# Returns
-=begin
+Output.
+
+```
             def #{name}=(#{new_value_variable_name})
               #{local_variable_name} =
                 #{plural_name}.first || #{plural_name}.new_#{new_name}
               #{additional_setup_code}
               #{local_variable_name}.#{attribute} = #{new_value_variable_name}
             end
-=end
 ```
 
 Limitations
