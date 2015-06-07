@@ -1,4 +1,4 @@
-require 'fast_method_source.so'
+require_relative 'fast_method_source/fast_method_source.so'
 
 module FastMethodSource
   class Method
