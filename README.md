@@ -113,7 +113,7 @@ myproc.source
 
 The other way is by using these methods accessing the library directly.
 
-```
+```ruby
 require 'fast_method_source'
 
 # With UnboundMethod
