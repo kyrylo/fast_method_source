@@ -92,4 +92,16 @@ class TestFastMethodSource < Minitest::Test
     method = REXML::Elements.instance_method(:[])
     assert_match(/def \[\]\( index, name=nil\)\n/, FastMethodSource.source_for(method))
   end
+
+  def test_source_for_core_ext
+    require 'fast_method_source/core_ext'
+
+    method = proc { |*args|
+      args.first + args.last
+    }
+
+    assert_raises(NameError) { Pry }
+    assert_raises(NameError) { MethodSource }
+    assert_match(/args\.first \+ args\.last/, method.source)
+  end
 end
