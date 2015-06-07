@@ -268,9 +268,8 @@ free_memory_for_file(char **file[], const int occupied_lines)
 static VALUE
 mMethodExtensions_source(VALUE self)
 {
-    VALUE method = rb_iv_get(self, "@method");
-    VALUE source_location = rb_funcall(method, rb_intern("source_location"), 0);
-    VALUE name = rb_funcall(method, rb_intern("name"), 0);
+    VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
+    VALUE name = rb_funcall(self, rb_intern("name"), 0);
 
     if (NIL_P(source_location)) {
         rb_raise(rb_eSourceNotFoundError, "Could not locate source for %s!",
