@@ -293,7 +293,7 @@ mMethodExtensions_source(VALUE self)
 
 void Init_fast_method_source(void)
 {
-    VALUE rb_mFastMethodSource = rb_define_module_under("FastMethodSource", rb_cObject);
+    VALUE rb_mFastMethodSource = rb_define_module_under(rb_cObject, "FastMethodSource");
 
     rb_eSourceNotFoundError = rb_define_class_under(rb_mFastMethodSource,"SourceNotFoundError", rb_eStandardError);
     VALUE rb_mMethodExtensions = rb_define_module_under(rb_mFastMethodSource, "MethodExtensions");
