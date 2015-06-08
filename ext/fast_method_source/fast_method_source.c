@@ -10,7 +10,7 @@ read_lines(const char *filename, char **file[], const int start_line)
     char *line = NULL;
     size_t len = 0;
     size_t line_len = 0;
-    int line_count = 0;
+    int line_count = 1;
     int occupied_lines = 0;
 
     fp = fopen(filename, "r");
@@ -188,7 +188,13 @@ find_expression(char **file[], const int occupied_lines)
     char *parseable_expr = malloc(expr_size);
     VALUE rb_expr;
 
-    char *first_line = (*file)[0];
+    int l = 0;
+    while ((*file)[l][0] == '\n') {
+        l++;
+        continue;
+    }
+    char *first_line = (*file)[l];
+
     char *line = NULL;
     int should_parse;
     int dangling = 0;
@@ -204,7 +210,7 @@ find_expression(char **file[], const int occupied_lines)
         should_parse = 0;
     }
 
-    for (int i = 0; i < occupied_lines; i++) {
+    for (int i = l; i < occupied_lines; i++) {
         line = (*file)[i];
 
         strcat(expr, line);
