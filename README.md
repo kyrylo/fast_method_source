@@ -50,6 +50,8 @@ library is much faster than method_source. The benchmark showed that it's
 about 5-10x faster than its competitor. There's also room for future speed
 improvements.
 
+#### Ruby 2.3.0dev
+
 ```
 Sample methods: 19299
 Rehearsal ------------------------------------------------------
