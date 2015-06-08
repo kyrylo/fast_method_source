@@ -120,4 +120,13 @@ class TestFastMethodSource < Minitest::Test
     assert_match(/def setup_parser\(str, debug=false\)\n/,
                  FastMethodSource.source_for(method))
   end
+
+  def test_source_for_rdoc_escape
+    require 'rdoc'
+
+    method = RDoc::Generator::POT::POEntry.instance_method(:escape)
+    assert_match(/def escape string\n/,
+                 FastMethodSource.source_for(method))
+  end
+
 end
