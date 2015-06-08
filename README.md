@@ -10,6 +10,7 @@ comments. Additionally, it supports Procs and lambdas.
 
 ```ruby
 require 'fast_method_source'
+require 'fast_method_source/core_ext'
 require 'set'
 
 puts Set.instance_method(:merge).source
