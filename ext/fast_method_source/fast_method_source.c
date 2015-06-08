@@ -71,7 +71,7 @@ reallocate_lines(char **lines[], int occupied_lines)
 }
 
 static NODE *
-with_silenced_stderr(NODE *(*compile)(const char*, VALUE, int), VALUE rb_str)
+with_silenced_stderr(VALUE rb_str)
 {
     int old_stderr;
     FILE *null_fd;
@@ -81,7 +81,8 @@ with_silenced_stderr(NODE *(*compile)(const char*, VALUE, int), VALUE rb_str)
     null_fd = fopen(null_filename, "w");
     DUP2(fileno(null_fd), STDERR_FILENO);
 
-    NODE *node = (*compile)("-", rb_str, 1);
+    volatile VALUE vparser = rb_parser_new();
+    NODE *node = rb_parser_compile_string(vparser, "-", rb_str, 1);
 
     fflush(stderr);
     fclose(null_fd);
@@ -94,7 +95,7 @@ with_silenced_stderr(NODE *(*compile)(const char*, VALUE, int), VALUE rb_str)
 
 static NODE *
 parse_expr(VALUE rb_str) {
-    return with_silenced_stderr(rb_compile_string, rb_str);
+    return with_silenced_stderr(rb_str);
 }
 
 static void

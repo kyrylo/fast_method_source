@@ -1,6 +1,7 @@
 # coding: utf-8
 require 'benchmark'
 require 'require_all'
+require 'method_source'
 
 module Kernel
   def suppress_warnings
@@ -12,7 +13,7 @@ module Kernel
   end
 end
 
-stdlib_files = File.join(ENV['RUBY_ROOT'], "lib/ruby/#{RUBY_VERSION}/**/*.rb")
+stdlib_files = File.join(ENV['RUBY_ROOT'], "lib/ruby/2*/**/*.rb")
 IGNORE_LIST = [
   /tkmacpkg.rb/,
   /macpkg.rb/,
@@ -33,7 +34,13 @@ IGNORE_LIST = [
   /subirb.rb/,
   /ws-for-case-2.rb/,
   /test_utilities.rb/,
-  /irb\/frame.rb/
+  /irb\/frame.rb/,
+  /psych\/parser.rb/,
+  /rake\/contrib\/sys.rb/,
+  /rake\/gempackagetask.rb/,
+  /rake\/rdoctask.rb/,
+  /ruby182_test_unit_fix.rb/,
+  /rake\/runtest.rb/
 ]
 
 files_to_require =  Dir.glob(stdlib_files).reject do |p|
