@@ -64,11 +64,12 @@ if $DEBUG
   puts "Requiring the rest of stdlib..."
 
   require_all files_to_require
+
+  puts "Requiring fast_method_source from source..."
+  require_relative '../lib/fast_method_source'
 else
   suppress_warnings { require_all files_to_require }
 end
-
-require_relative '../lib/fast_method_source'
 
 puts "Counting the number of sample methods..."
 
@@ -84,15 +85,15 @@ end
 puts "Sample methods: #{method_list.count}"
 
 Benchmark.bmbm do |bm|
-  bm.report('method_source') do
-    method_list.each do |method|
-      method.source
-    end
-  end
-
   bm.report('fast_method_source') do
     method_list.each do |method|
       FastMethodSource.source_for(method)
+    end
+  end
+
+  bm.report('method_source') do
+    method_list.each do |method|
+      method.source
     end
   end
 end
