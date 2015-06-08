@@ -1,4 +1,4 @@
-require_relative 'helper'
+require_relative '../helper'
 
 class TestFastMethodSource < Minitest::Test
   def test_source_for_class
@@ -19,8 +19,24 @@ class TestFastMethodSource < Minitest::Test
     assert_match(/args\.first \+ args\.last/, FastMethodSource.source_for(method))
   end
 
+  def test_source_for_proc_instance
+    method = Proc.new { |*args|
+      args.first + args.last
+    }
+
+    assert_match(/args\.first \+ args\.last/, FastMethodSource.source_for(method))
+  end
+
   def test_source_for_lambda
-    method = proc { |*args|
+    method = lambda { |*args|
+      args.first + args.last
+    }
+
+    assert_match(/args\.first \+ args\.last/, FastMethodSource.source_for(method))
+  end
+
+  def test_source_for_lambda_arrow
+    method = -> *args {
       args.first + args.last
     }
 
