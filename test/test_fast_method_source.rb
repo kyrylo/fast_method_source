@@ -104,4 +104,12 @@ class TestFastMethodSource < Minitest::Test
     assert_raises(NameError) { MethodSource }
     assert_match(/args\.first \+ args\.last/, method.source)
   end
+
+  def test_source_for_mkmf_configuration
+    require 'mkmf'
+
+    method = MakeMakefile.instance_method(:configuration)
+    assert_match(/CONFIG\["hdrdir"\] \|\|\= \$hdrdir/,
+                 FastMethodSource.source_for(method))
+  end
 end

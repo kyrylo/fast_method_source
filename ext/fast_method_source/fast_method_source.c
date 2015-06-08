@@ -187,6 +187,7 @@ find_expression(char **file[], const int occupied_lines)
     char *first_line = (*file)[0];
     char *line = NULL;
     int should_parse;
+    int dangling = 0;
 
     expr[0] = '\0';
     parseable_expr[0] = '\0';
@@ -206,6 +207,17 @@ find_expression(char **file[], const int occupied_lines)
 
         if (is_comment(line))
             continue;
+
+        if (strstr(line, "}") != NULL && strstr(line, "{") == NULL) {
+            dangling = 0;
+        }
+
+        if (dangling)
+            continue;
+
+        if (strstr(line, "%{") != NULL && strstr(line, "}") == NULL) {
+            dangling = 1;
+        }
 
         filter_interp(line);
         strcat(parseable_expr, line);
