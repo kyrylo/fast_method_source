@@ -12,6 +12,14 @@ task :cleanup do
   system 'rm -f lib/fast_method_source/fast_method_source.so'
 end
 
+task :release do
+  puts "So you want to release this thing, right?"
+  puts "Here are your instructions:"
+  puts "  0. Make sure this guide is up to date"
+  puts "  1. Update the benchmark in README.md"
+  puts "  2. Push to RubyGems!"
+end
+
 task :test => [:cleanup, :clobber, :compile] do
   Rake::TestTask.new do |t|
     t.test_files = Dir.glob('test/**/test_*.rb')
