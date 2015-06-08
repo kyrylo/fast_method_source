@@ -181,9 +181,12 @@ is_static_definition(const char *line)
 static VALUE
 find_expression(char **file[], const int occupied_lines)
 {
-    unsigned expr_size = occupied_lines * MAXLINELEN;
-    char expr[expr_size];
-    char parseable_expr[expr_size];
+    int expr_size = occupied_lines * MAXLINELEN;
+
+    char *expr = malloc(expr_size);
+    char *parseable_expr = malloc(expr_size);
+    VALUE rb_expr;
+
     char *first_line = (*file)[0];
     char *line = NULL;
     int should_parse;
@@ -224,12 +227,17 @@ find_expression(char **file[], const int occupied_lines)
 
         if (should_parse || contains_end_kw(line)) {
             if (parse_expr(rb_str_new2(parseable_expr)) != NULL) {
-                return rb_str_new2(expr);
+                rb_expr = rb_str_new2(expr);
+                free(expr);
+                free(parseable_expr);
+                return rb_expr;
             }
         }
     }
 
     printf("%s", parseable_expr);
+    free(expr);
+    free(parseable_expr);
     free_memory_for_file(file, occupied_lines);
     rb_raise(rb_eSyntaxError, "failed to parse expression (probably a bug)");
 

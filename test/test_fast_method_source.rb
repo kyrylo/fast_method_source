@@ -112,4 +112,12 @@ class TestFastMethodSource < Minitest::Test
     assert_match(/CONFIG\["hdrdir"\] \|\|\= \$hdrdir/,
                  FastMethodSource.source_for(method))
   end
+
+  def test_source_for_rdoc_setup_parser
+    require 'rdoc'
+
+    method = RDoc::Markdown.instance_method(:setup_parser)
+    assert_match(/def setup_parser\(str, debug=false\)\n/,
+                 FastMethodSource.source_for(method))
+  end
 end
