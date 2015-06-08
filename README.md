@@ -46,7 +46,8 @@ with a number of major key differences.
 
 The main goal of Fast Method Source is to be as fast as possible. In result, the
 library is much faster than method_source. The benchmark showed that it's
-about 5-10x faster than its competitor.
+about 5-10x faster than its competitor. There's also room for future speed
+improvements.
 
 ```
 Sample methods: 19299
