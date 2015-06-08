@@ -138,6 +138,7 @@ Limitations
 
 The library supports *only* CRuby.
 
+* CRuby 2.2.2
 * CRuby 2.3.0dev and higher
 
 Licence
