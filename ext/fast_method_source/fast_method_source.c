@@ -124,8 +124,6 @@ filter_interp(char *line)
             line[i] = SAFE_CHAR;
         }
     }
-
-    return brackets;
 }
 
 static int
