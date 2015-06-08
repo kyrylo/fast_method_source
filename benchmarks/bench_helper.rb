@@ -74,16 +74,6 @@ else
   suppress_warnings { require_all files_to_require }
 end
 
-puts "Your processor is: #{Sys::CPU.processors.first.model_name}"
+puts "Processor: #{Sys::CPU.processors.first.model_name}"
+puts "Platform: #{RUBY_ENGINE} #{RUBY_VERSION}p#{RUBY_PATCHLEVEL} (#{RUBY_RELEASE_DATE} revision #{RUBY_REVISION}) [#{RUBY_PLATFORM}]"
 puts "Counting the number of sample methods..."
-
-method_list = SystemNavigation.new.all_methods.select do |method|
-  if method.source_location
-    begin
-      FastMethodSource.source_for(method)
-    rescue
-    end
-  end
-end
-
-puts "Sample methods: #{method_list.count}"
