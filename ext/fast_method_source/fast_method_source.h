@@ -33,4 +33,4 @@ static int is_comment(const char *line);
 static int is_static_definition(const char *line);
 static int is_accessor(const char *line);
 
-#define SAFE_CHAR 'X'
+#define SAFE_CHAR 'z'
