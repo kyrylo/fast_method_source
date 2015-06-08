@@ -2,8 +2,8 @@
 
 static VALUE rb_eSourceNotFoundError;
 
-static unsigned short
-read_lines(const unsigned short method_location, const char *filename, char **filebuf[])
+static unsigned
+read_lines(const unsigned method_location, const char *filename, char **filebuf[])
 {
     FILE *fp;
 
@@ -16,8 +16,8 @@ read_lines(const unsigned short method_location, const char *filename, char **fi
     char *current_line = NULL;
     char **current_linebuf = NULL;
     size_t current_linebuf_size = 0;
-    unsigned short rl_n = 0;
-    unsigned short line_count = 1;
+    unsigned rl_n = 0;
+    unsigned line_count = 1;
 
     while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
         if (line_count < method_location) {
@@ -47,7 +47,7 @@ read_lines(const unsigned short method_location, const char *filename, char **fi
 }
 
 static void
-reallocate_linebuf(char **linebuf, const unsigned short cl_len)
+reallocate_linebuf(char **linebuf, const unsigned cl_len)
 {
     char *tmp_line;
 
@@ -59,9 +59,9 @@ reallocate_linebuf(char **linebuf, const unsigned short cl_len)
 }
 
 static void
-reallocate_filebuf(char **lines[], unsigned short rl_len)
+reallocate_filebuf(char **lines[], unsigned rl_len)
 {
-    unsigned short new_size = rl_len + MAXLINES + 1;
+    unsigned new_size = rl_len + MAXLINES + 1;
     char **temp_lines = realloc(*lines, sizeof(*temp_lines) * new_size);
 
     if (temp_lines == NULL) {
@@ -90,6 +90,7 @@ parse_with_silenced_stderr(VALUE rb_str)
 
     volatile VALUE vparser = rb_parser_new();
     NODE *node = rb_parser_compile_string(vparser, "-", rb_str, 1);
+    rb_str_free(rb_str);
 
     fflush(stderr);
     fclose(null_fd);
@@ -197,11 +198,11 @@ is_dangling_literal_begin(const char *line)
 }
 
 static VALUE
-find_source(char **filebuf[], const unsigned short relevant_lines_n)
+find_source(char **filebuf[], const unsigned relevant_lines_n)
 {
     VALUE rb_expr;
 
-    const unsigned short expr_size = relevant_lines_n * MAXLINELEN;
+    const unsigned expr_size = relevant_lines_n * MAXLINELEN;
     char *expr = malloc(expr_size);
     expr[0] = '\0';
     char *parseable_expr = malloc(expr_size);
@@ -223,7 +224,7 @@ find_source(char **filebuf[], const unsigned short relevant_lines_n)
         should_parse = 1;
     }
 
-    for (int i = l; i < relevant_lines_n; i++) {
+    for (unsigned i = l; i < relevant_lines_n; i++) {
         current_line = (*filebuf)[i];
         current_line_len = strlen(current_line);
 
@@ -280,7 +281,7 @@ allocate_memory_for_file(void)
 }
 
 static void
-free_memory_for_file(char **file[], const unsigned short relevant_lines_n)
+free_memory_for_file(char **file[], const unsigned relevant_lines_n)
 {
     int lines_to_free = relevant_lines_n >= MAXLINES ? relevant_lines_n : MAXLINES;
 
@@ -303,10 +304,10 @@ mMethodExtensions_source(VALUE self)
     }
 
     const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
-    const unsigned short method_location = FIX2INT(RARRAY_AREF(source_location, 1));
+    const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
 
     char **filebuf = allocate_memory_for_file();
-    const unsigned short relevant_lines_n = read_lines(method_location, filename,
+    const unsigned relevant_lines_n = read_lines(method_location, filename,
                                                        &filebuf);
 
     VALUE source = find_source(&filebuf, relevant_lines_n);
