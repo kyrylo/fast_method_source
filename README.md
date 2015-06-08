@@ -140,10 +140,18 @@ FastMethodSource.source_for(myproc)
 Limitations
 -----------
 
-The library supports *only* CRuby.
+### Rubies
 
 * CRuby 2.2.2
 * CRuby 2.3.0dev and higher
+
+Rubies below 2.2.2 were not tested, so in theory if it quacks like Ruby 2, it
+may work.
+
+### OS'es
+
+* GNU/Linux
+* Mac OS (hopefully)
 
 Roadmap
 -------
