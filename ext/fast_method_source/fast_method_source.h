@@ -19,17 +19,17 @@ static const char *null_filename = "/dev/null";
 #define MAXLINES 1000
 #define MAXLINELEN 300
 
-static int read_lines(const int method_location, const char *filename,
-                      char **filebuf[]);
-static void reallocate_filebuf(char **lines[], int cl_len);
-static void reallocate_linebuf(char **linebuf, const int cl_len);
-static VALUE find_source(char **filebuf[], const int relevant_lines_n);
+static unsigned short read_lines(const unsigned short method_location,
+                                 const char *filename, char **filebuf[]);
+static void reallocate_filebuf(char **lines[], unsigned short rl_len);
+static void reallocate_linebuf(char **linebuf, const unsigned short cl_len);
+static VALUE find_source(char **filebuf[], const unsigned short relevant_lines_n);
 static VALUE mMethodExtensions_source(VALUE self);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
 static void filter_interp(char *line);
 static char **allocate_memory_for_file(void);
-static void free_memory_for_file(char **file[], const int occupied_lines);
+static void free_memory_for_file(char **file[], const unsigned short relevant_lines_n);
 static int contains_end_kw(const char *line);
 static int is_comment(const char *line, const size_t line_len);
 static int is_static_definition(const char *line);
