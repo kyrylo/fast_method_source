@@ -5,6 +5,8 @@ def require_dep(dep_name)
   require dep_name
 rescue LoadError => e
   name = e.message.scan(/(?<=-- ).+/).first
+  raise e unless name
+  name.gsub!('/', '-')
   puts "'#{name}' is not installed. To fix: gem install #{name}"
   exit
 end
@@ -22,6 +24,7 @@ end
 require_dep 'require_all'
 require_dep 'method_source'
 require_dep 'system_navigation'
+require_dep 'sys/cpu'
 
 stdlib_files = File.join(ENV['RUBY_ROOT'], "lib/ruby/2*/**/*.rb")
 IGNORE_LIST = [
@@ -71,6 +74,7 @@ else
   suppress_warnings { require_all files_to_require }
 end
 
+puts "Your processor is: #{Sys::CPU.processors.first.model_name}"
 puts "Counting the number of sample methods..."
 
 method_list = SystemNavigation.new.all_methods.select do |method|
