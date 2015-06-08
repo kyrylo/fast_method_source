@@ -25,7 +25,7 @@ static VALUE mMethodExtensions_source(VALUE self);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *with_silenced_stderr(NODE *(*compile)(const char*, VALUE, int),
 				  VALUE rb_str);
-static int filter_interp(char *line);
+static void filter_interp(char *line);
 static char **allocate_memory_for_file(void);
 static void free_memory_for_file(char **file[], const int occupied_lines);
 static int contains_end_kw(const char *line);

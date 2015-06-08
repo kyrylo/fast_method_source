@@ -97,17 +97,15 @@ parse_expr(VALUE rb_str) {
     return with_silenced_stderr(rb_compile_string, rb_str);
 }
 
-static int
+static void
 filter_interp(char *line)
 {
-    int dangling = 0;
     int brackets = 0;
 
     for (int i = 0; line[i] != '\0'; i++) {
         if (line[i] == '#') {
             if (line[i + 1] == '{') {
                 brackets++;
-                dangling = 1;
 
                 line[i] = SAFE_CHAR;
 
@@ -116,11 +114,10 @@ filter_interp(char *line)
             }
         }
 
-        if (dangling == 1 && line[i] == '}') {
+        if (line[i] == '}') {
             brackets--;
 
             if (brackets == 0) {
-                dangling = 0;
                 line[i] = SAFE_CHAR;
             }
         } else if (brackets > 0) {
@@ -192,7 +189,6 @@ find_expression(char **file[], const int occupied_lines)
     char *first_line = (*file)[0];
     char *line = NULL;
     int should_parse;
-    int dangling_brackets = 0;
 
     expr[0] = '\0';
     parseable_expr[0] = '\0';
@@ -213,14 +209,8 @@ find_expression(char **file[], const int occupied_lines)
         if (is_comment(line))
             continue;
 
-        if (dangling_brackets)
-            continue;
-
-        dangling_brackets = filter_interp(line);
+        filter_interp(line);
         strcat(parseable_expr, line);
-
-        if (dangling_brackets)
-            continue;
 
         if (should_parse || contains_end_kw(line)) {
             if (parse_expr(rb_str_new2(parseable_expr)) != NULL) {
@@ -229,6 +219,7 @@ find_expression(char **file[], const int occupied_lines)
         }
     }
 
+    printf("%s", parseable_expr);
     free_memory_for_file(file, occupied_lines);
     rb_raise(rb_eSyntaxError, "failed to parse expression (probably a bug)");
 
