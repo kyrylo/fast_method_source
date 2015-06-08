@@ -21,7 +21,7 @@ static const char *null_filename = "/dev/null";
 
 static int read_lines(const int method_location, const char *filename,
                       char **filebuf[]);
-static void reallocate_filebuf(char **lines[], int occupied_lines);
+static void reallocate_filebuf(char **lines[], int cl_len);
 static void reallocate_linebuf(char **linebuf, const int cl_len);
 static VALUE find_source(char **filebuf[], const int relevant_lines_n);
 static VALUE mMethodExtensions_source(VALUE self);
