@@ -49,16 +49,15 @@ library is much faster than method_source. The benchmark showed that it's
 about 8-10x faster than its competitor.
 
 ```
-Counting the number of sample methods...
-Sample methods: 9633
+Sample methods: 19299
 Rehearsal ------------------------------------------------------
-method_source       31.740000   0.330000  32.070000 ( 32.061969)
-fast_method_source   3.630000   0.330000   3.960000 (  3.961190)
--------------------------------------------- total: 36.030000sec
+method_source       90.900000   0.360000  91.260000 (101.708412)
+method_source_code  19.850000   1.460000  21.310000 ( 23.213132)
+------------------------------------------- total: 112.570000sec
 
                          user     system      total        real
-method_source       30.460000   0.270000  30.730000 ( 30.846146)
-fast_method_source   3.670000   0.390000   4.060000 (  4.089203)
+method_source       87.020000   0.280000  87.300000 ( 97.182961)
+method_source_code  18.840000   1.240000  20.080000 ( 21.821779)
 ```
 
 ### Correctness of output
