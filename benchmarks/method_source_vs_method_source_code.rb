@@ -67,7 +67,7 @@ puts "Counting the number of sample methods..."
 method_list = SystemNavigation.new.all_methods.select do |method|
   if method.source_location
     begin
-      method.source
+      FastMethodSource.source_for(method)
     rescue
     end
   end
@@ -82,7 +82,7 @@ Benchmark.bmbm do |bm|
     end
   end
 
-  bm.report('method_source_code') do
+  bm.report('fast_method_source') do
     method_list.map do |method|
       FastMethodSource.source_for(method)
     end

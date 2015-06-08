@@ -54,12 +54,12 @@ improvements.
 Sample methods: 19299
 Rehearsal ------------------------------------------------------
 method_source       90.900000   0.360000  91.260000 (101.708412)
-method_source_code  19.850000   1.460000  21.310000 ( 23.213132)
+fast_method_source  19.850000   1.460000  21.310000 ( 23.213132)
 ------------------------------------------- total: 112.570000sec
 
                          user     system      total        real
 method_source       87.020000   0.280000  87.300000 ( 97.182961)
-method_source_code  18.840000   1.240000  20.080000 ( 21.821779)
+fast_method_source  18.840000   1.240000  20.080000 ( 21.821779)
 ```
 
 ### Correctness of output
