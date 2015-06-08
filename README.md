@@ -141,6 +141,17 @@ The library supports *only* CRuby.
 * CRuby 2.2.2
 * CRuby 2.3.0dev and higher
 
+Roadmap
+-------
+
+Although Fast Method Source is faster than any of its competitors, it's still
+very slow. On average, a mature Rails 4 application has at least 45K methods. In
+order to query all those methods for their source code, you would need to wait
+for a while and perhaps to drink a cup of tea.
+
+The goal of the project is to be able to query 50K methods in less than 15
+seconds. Whether it's possible or not is to be determined.
+
 Licence
 -------
 
