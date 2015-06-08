@@ -50,18 +50,20 @@ library is much faster than method_source. The benchmark showed that it's
 about 5-10x faster than its competitor. There's also room for future speed
 improvements.
 
-#### Ruby 2.3.0dev
+#### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
 ```
-Sample methods: 19299
+Your processor is: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+Counting the number of sample methods...
+Sample methods: 19437
 Rehearsal ------------------------------------------------------
-method_source       90.900000   0.360000  91.260000 (101.708412)
-fast_method_source  19.850000   1.460000  21.310000 ( 23.213132)
-------------------------------------------- total: 112.570000sec
+fast_method_source  19.200000   1.150000  20.350000 ( 22.144561)
+method_source       95.400000   0.550000  95.950000 (114.498600)
+------------------------------------------- total: 116.300000sec
 
                          user     system      total        real
-method_source       87.020000   0.280000  87.300000 ( 97.182961)
-fast_method_source  18.840000   1.240000  20.080000 ( 21.821779)
+fast_method_source  18.010000   1.100000  19.110000 ( 20.718103)
+method_source       89.930000   0.270000  90.200000 (100.268377)
 ```
 
 ### Correctness of output
