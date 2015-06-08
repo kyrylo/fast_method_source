@@ -1,7 +1,13 @@
 # coding: utf-8
 require 'benchmark'
-require 'require_all'
-require 'method_source'
+
+def require_dep(dep_name)
+  require dep_name
+rescue LoadError => e
+  name = e.message.scan(/(?<=-- ).+/).first
+  puts "'#{name}' is not installed. To fix: gem install #{name}"
+  exit
+end
 
 module Kernel
   def suppress_warnings
@@ -12,6 +18,10 @@ module Kernel
     return result
   end
 end
+
+require_dep 'require_all'
+require_dep 'method_source'
+require_dep 'system_navigation'
 
 stdlib_files = File.join(ENV['RUBY_ROOT'], "lib/ruby/2*/**/*.rb")
 IGNORE_LIST = [
@@ -43,7 +53,7 @@ IGNORE_LIST = [
   /rake\/runtest.rb/
 ]
 
-files_to_require =  Dir.glob(stdlib_files).reject do |p|
+files_to_require = Dir.glob(stdlib_files).reject do |p|
   IGNORE_LIST.any? { |pattern| pattern =~ p }
 end
 
@@ -58,8 +68,6 @@ else
   suppress_warnings { require_all files_to_require }
 end
 
-
-require_relative '../../system_navigation/lib/system_navigation'
 require_relative '../lib/fast_method_source'
 
 puts "Counting the number of sample methods..."
@@ -67,7 +75,7 @@ puts "Counting the number of sample methods..."
 method_list = SystemNavigation.new.all_methods.select do |method|
   if method.source_location
     begin
-      method.source
+      FastMethodSource.source_for(method)
     rescue
     end
   end
