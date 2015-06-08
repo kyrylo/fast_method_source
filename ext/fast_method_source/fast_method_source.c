@@ -3,56 +3,63 @@
 static VALUE rb_eSourceNotFoundError;
 
 static int
-read_lines(const char *filename, char **file[], const int start_line)
+read_lines(const int method_location, const char *filename, char **filebuf[])
 {
     FILE *fp;
-    ssize_t read;
-    char *line = NULL;
-    size_t len = 0;
-    size_t line_len = 0;
-    int line_count = 1;
-    int occupied_lines = 0;
 
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
+    if ((fp = fopen(filename, "r")) == NULL) {
         rb_raise(rb_eIOError, "No such file or directory - %s", filename);
     }
 
-    while ((read = getline(&line, &len, fp)) != -1) {
-        if (line_count < start_line) {
+    ssize_t cl_len;
+
+    char *current_line = NULL;
+    char **current_linebuf = NULL;
+    size_t current_linebuf_size = 0;
+    int rl_n = 0;
+    int line_count = 1;
+
+    while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
+        if (line_count < method_location) {
             line_count++;
             continue;
         }
 
-        if ((occupied_lines != 0) && (occupied_lines % (MAXLINES-1) == 0)) {
-            reallocate_lines(file, occupied_lines);
+        if ((rl_n != 0) && (rl_n % (MAXLINES-1) == 0)) {
+            reallocate_filebuf(filebuf, rl_n);
         }
 
-        line_len = strlen(line);
+        current_linebuf = &(*filebuf)[rl_n];
 
-        if (line_len >= MAXLINELEN) {
-            char *tmp;
-
-            if ((tmp = realloc((*file)[occupied_lines], line_len + 1)) == NULL) {
-                rb_raise(rb_eNoMemError, "failed to allocate memory");
-            }
-
-            (*file)[occupied_lines] = tmp;
+        if (cl_len >= MAXLINELEN) {
+            reallocate_linebuf(current_linebuf, cl_len);
         }
 
-        strncpy((*file)[occupied_lines], line, read);
-        (*file)[occupied_lines][read] = '\0';
-        occupied_lines++;
+        strncpy(*current_linebuf, current_line, cl_len);
+        (*current_linebuf)[cl_len] = '\0';
+        rl_n++;
     }
 
-    free(line);
+    free(current_line);
     fclose(fp);
 
-    return occupied_lines;
+    return rl_n;
 }
 
 static void
-reallocate_lines(char **lines[], int occupied_lines)
+reallocate_linebuf(char **linebuf, const int cl_len)
+{
+    char *tmp_line;
+
+    if ((tmp_line = realloc(*linebuf, cl_len + 1)) == NULL) {
+        rb_raise(rb_eNoMemError, "failed to allocate memory");
+    }
+
+    *linebuf = tmp_line;
+}
+
+static void
+reallocate_filebuf(char **lines[], int occupied_lines)
 {
     int new_size = occupied_lines + MAXLINES + 1;
     char **temp_lines = realloc(*lines, sizeof(*temp_lines) * new_size);
@@ -71,7 +78,7 @@ reallocate_lines(char **lines[], int occupied_lines)
 }
 
 static NODE *
-with_silenced_stderr(VALUE rb_str)
+parse_with_silenced_stderr(VALUE rb_str)
 {
     int old_stderr;
     FILE *null_fd;
@@ -95,7 +102,7 @@ with_silenced_stderr(VALUE rb_str)
 
 static NODE *
 parse_expr(VALUE rb_str) {
-    return with_silenced_stderr(rb_str);
+    return parse_with_silenced_stderr(rb_str);
 }
 
 static void
@@ -150,10 +157,8 @@ is_accessor(const char *line)
 }
 
 static int
-is_comment(const char *line)
+is_comment(const char *line, const size_t line_len)
 {
-    size_t line_len = strlen(line);
-
     for (size_t i = 0; i < line_len; i++) {
         if (line[i] == ' ')
             continue;
@@ -179,60 +184,66 @@ is_static_definition(const char *line)
     return strstr(line, " def ") != NULL || strncmp(line, "def ", 4);
 }
 
-static VALUE
-find_expression(char **file[], const int occupied_lines)
+static int
+is_dangling_literal_end(const char *line)
 {
-    int expr_size = occupied_lines * MAXLINELEN;
+    return strstr(line, "}") != NULL && strstr(line, "{") == NULL;
+}
 
-    char *expr = malloc(expr_size);
-    char *parseable_expr = malloc(expr_size);
+static int
+is_dangling_literal_begin(const char *line)
+{
+    return strstr(line, "%{") != NULL && strstr(line, "}") == NULL;
+}
+
+static VALUE
+find_source(char **filebuf[], const int relevant_lines_n)
+{
     VALUE rb_expr;
 
+    const int expr_size = relevant_lines_n * MAXLINELEN;
+    char *expr = malloc(expr_size);
+    expr[0] = '\0';
+    char *parseable_expr = malloc(expr_size);
+    parseable_expr[0] = '\0';
+
     int l = 0;
-    while ((*file)[l][0] == '\n') {
+    while ((*filebuf)[l][0] == '\n') {
         l++;
         continue;
     }
-    char *first_line = (*file)[l];
+    char *first_line = (*filebuf)[l];
 
-    char *line = NULL;
-    int should_parse;
-    int dangling = 0;
+    char *current_line = NULL;
+    int should_parse = 0;
+    int dangling_literal = 0;
+    int current_line_len;
 
-    expr[0] = '\0';
-    parseable_expr[0] = '\0';
-
-    if (is_static_definition(first_line)) {
+    if (is_static_definition(first_line) || is_accessor(first_line)) {
         should_parse = 1;
-    } else if (is_accessor(first_line)) {
-        should_parse = 1;
-    } else {
-        should_parse = 0;
     }
 
-    for (int i = l; i < occupied_lines; i++) {
-        line = (*file)[i];
+    for (int i = l; i < relevant_lines_n; i++) {
+        current_line = (*filebuf)[i];
+        current_line_len = strlen(current_line);
 
-        strcat(expr, line);
+        strncat(expr, current_line, current_line_len);
 
-        if (is_comment(line))
+        if (is_comment(current_line, current_line_len))
             continue;
 
-        if (strstr(line, "}") != NULL && strstr(line, "{") == NULL) {
-            dangling = 0;
-        }
-
-        if (dangling)
+        if (is_dangling_literal_end(current_line)) {
+            dangling_literal = 0;
+        } else if (is_dangling_literal_begin(current_line)) {
+            dangling_literal = 1;
+        } else if (dangling_literal) {
             continue;
-
-        if (strstr(line, "%{") != NULL && strstr(line, "}") == NULL) {
-            dangling = 1;
         }
 
-        filter_interp(line);
-        strcat(parseable_expr, line);
+        filter_interp(current_line);
+        strncat(parseable_expr, current_line, current_line_len);
 
-        if (should_parse || contains_end_kw(line)) {
+        if (should_parse || contains_end_kw(current_line)) {
             if (parse_expr(rb_str_new2(parseable_expr)) != NULL) {
                 rb_expr = rb_str_new2(expr);
                 free(expr);
@@ -242,10 +253,9 @@ find_expression(char **file[], const int occupied_lines)
         }
     }
 
-    printf("%s", parseable_expr);
     free(expr);
     free(parseable_expr);
-    free_memory_for_file(file, occupied_lines);
+    free_memory_for_file(filebuf, relevant_lines_n);
     rb_raise(rb_eSyntaxError, "failed to parse expression (probably a bug)");
 
     return Qnil;
@@ -292,18 +302,17 @@ mMethodExtensions_source(VALUE self)
                  RSTRING_PTR(rb_sym2str(name)));
     }
 
-    char **file = allocate_memory_for_file();
-
     const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
-    const int start_line = FIX2INT(RARRAY_AREF(source_location, 1)) - 1;
+    const int method_location = FIX2INT(RARRAY_AREF(source_location, 1));
 
-    const int occupied_lines = read_lines(filename, &file, start_line);
+    char **filebuf = allocate_memory_for_file();
+    const int relevant_lines_n = read_lines(method_location, filename, &filebuf);
 
-    VALUE expression = find_expression(&file, occupied_lines);
+    VALUE source = find_source(&filebuf, relevant_lines_n);
 
-    free_memory_for_file(&file, occupied_lines);
+    free_memory_for_file(&filebuf, relevant_lines_n);
 
-    return expression;
+    return source;
 }
 
 void Init_fast_method_source(void)
