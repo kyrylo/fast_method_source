@@ -144,4 +144,16 @@ class TestFastMethodSource < Minitest::Test
     assert_match(/@\#{plural}.each do |\#{name}|\n/,
                  FastMethodSource.source_for(method))
   end
+
+  def test_source_for_fileutils_cd
+    require 'fileutils'
+
+    method = FileUtils::LowMethods.instance_method(:cd)
+
+    # Reports wrong source_location (lineno 1981 instead of 1980).
+    # https://github.com/ruby/ruby/blob/a9721a259665149b1b9ff0beabcf5f8dc0136120/lib/fileutils.rb#L1681
+    assert_raises(FastMethodSource::SourceNotFoundError) {
+      FastMethodSource.source_for(method)
+    }
+  end
 end

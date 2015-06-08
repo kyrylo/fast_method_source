@@ -257,7 +257,6 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
     free(expr);
     free(parseable_expr);
     free_memory_for_file(filebuf, relevant_lines_n);
-    rb_raise(rb_eSyntaxError, "failed to parse expression (probably a bug)");
 
     return Qnil;
 }
@@ -299,7 +298,7 @@ mMethodExtensions_source(VALUE self)
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
 
     if (NIL_P(source_location)) {
-        rb_raise(rb_eSourceNotFoundError, "Could not locate source for %s!",
+        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
                  RSTRING_PTR(rb_sym2str(name)));
     }
 
@@ -312,6 +311,10 @@ mMethodExtensions_source(VALUE self)
 
     VALUE source = find_source(&filebuf, relevant_lines_n);
 
+    if (NIL_P(source)) {
+        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
+                 RSTRING_PTR(rb_sym2str(name)));
+    }
     free_memory_for_file(&filebuf, relevant_lines_n);
 
     return source;
