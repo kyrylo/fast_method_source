@@ -157,7 +157,7 @@ is_comment(const char *line)
         if (line[i] == ' ')
             continue;
 
-        if (line[i] == '#') {
+        if (line[i] == '#' && line[i + 1] != '{') {
             for (size_t j = i - 1; j != 0; j--) {
                 if (line[j] != ' ')
                     return 0;

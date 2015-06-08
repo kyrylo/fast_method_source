@@ -129,4 +129,19 @@ class TestFastMethodSource < Minitest::Test
                  FastMethodSource.source_for(method))
   end
 
+  def test_source_for_rss_to_feed
+    require 'rss'
+
+    method = RSS::Maker::DublinCoreModel::DublinCoreDatesBase.instance_method(:to_feed)
+    assert_match(/@\#{plural}.each do |\#{name}|\n/,
+                 FastMethodSource.source_for(method))
+  end
+
+  def test_source_for_rdoc_find_attr_comment
+    require 'rdoc'
+
+    method = RDoc::Parser::C.instance_method(:find_attr_comment)
+    assert_match(/@\#{plural}.each do |\#{name}|\n/,
+                 FastMethodSource.source_for(method))
+  end
 end
