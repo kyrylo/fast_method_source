@@ -19,11 +19,18 @@ static const char *null_filename = "/dev/null";
 #define MAXLINES 600
 #define MAXLINELEN 90
 #define COMMENT_SIZE 1000
+#define SAFE_CHAR 'z'
 
 typedef struct {
     int forward  : 1;
     int backward : 1;
 } read_order;
+
+typedef struct {
+    unsigned method_location;
+    const char *filename;
+    VALUE classname;
+} filebuf_params;
 
 static unsigned read_lines(read_order order, const unsigned method_location,
                            const char *filename, char **filebuf[]);
@@ -51,5 +58,4 @@ static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
 static void raise_if_nil(VALUE val, VALUE name);
 static void realloc_comment(char **comment, unsigned len);
-
-#define SAFE_CHAR 'z'
+static char **filebuf_new(VALUE self, filebuf_params *params);

@@ -394,8 +394,8 @@ raise_if_nil(VALUE val, VALUE name)
     }
 }
 
-static VALUE
-mMethodExtensions_source(VALUE self)
+static char **
+filebuf_new(VALUE self, filebuf_params *params)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
@@ -408,15 +408,25 @@ mMethodExtensions_source(VALUE self)
     raise_if_nil(rb_filename, name);
     raise_if_nil(rb_method_location, name);
 
-    const char *filename = RSTRING_PTR(rb_filename);
-    const unsigned method_location = FIX2INT(rb_method_location);
+    params->filename = RSTRING_PTR(rb_filename);
+    params->method_location = FIX2INT(rb_method_location);
+    params->classname = name;
 
-    char **filebuf = allocate_memory_for_file();
-    const unsigned relevant_lines_n = read_lines_after(method_location,
-                                                       filename, &filebuf);
+    return allocate_memory_for_file();
+}
+
+static VALUE
+mMethodExtensions_source(VALUE self)
+{
+    filebuf_params filebuf_params;
+    char **filebuf = filebuf_new(self, &filebuf_params);
+
+    const unsigned relevant_lines_n = read_lines_after(
+        filebuf_params.method_location, filebuf_params.filename, &filebuf);
+
     VALUE source = find_source(&filebuf, relevant_lines_n);
 
-    raise_if_nil(source, name);
+    raise_if_nil(source, filebuf_params.classname);
     free_memory_for_file(&filebuf, relevant_lines_n);
 
     return source;
@@ -425,26 +435,15 @@ mMethodExtensions_source(VALUE self)
 static VALUE
 mMethodExtensions_comment(VALUE self)
 {
-    VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
-    VALUE name = rb_funcall(self, rb_intern("name"), 0);
+    filebuf_params filebuf_params;
+    char **filebuf = filebuf_new(self, &filebuf_params);
 
-    raise_if_nil(source_location, name);
+    const unsigned relevant_lines_n = read_lines_before(
+        filebuf_params.method_location, filebuf_params.filename, &filebuf);
+    VALUE comment = find_comment(&filebuf, filebuf_params.method_location,
+                                 relevant_lines_n);
 
-    VALUE rb_filename = RARRAY_AREF(source_location, 0);
-    VALUE rb_method_location = RARRAY_AREF(source_location, 1);
-
-    raise_if_nil(rb_filename, name);
-    raise_if_nil(rb_method_location, name);
-
-    const char *filename = RSTRING_PTR(rb_filename);
-    const unsigned method_location = FIX2INT(rb_method_location);
-
-    char **filebuf = allocate_memory_for_file();
-    const unsigned relevant_lines_n = read_lines_before(method_location,
-                                                        filename, &filebuf);
-    VALUE comment = find_comment(&filebuf, method_location, relevant_lines_n);
-
-    raise_if_nil(comment, name);
+    raise_if_nil(comment, filebuf_params.classname);
     free_memory_for_file(&filebuf, relevant_lines_n);
 
     return comment;
