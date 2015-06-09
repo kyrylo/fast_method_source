@@ -3,7 +3,24 @@
 static VALUE rb_eSourceNotFoundError;
 
 static unsigned
-read_lines(const unsigned method_location, const char *filename, char **filebuf[])
+read_lines_after(const unsigned method_location,
+                 const char *filename, char **filebuf[])
+{
+    read_order order = {1, 0};
+    return read_lines(order, method_location, filename, filebuf);
+}
+
+static unsigned
+read_lines_before(const unsigned method_location,
+                  const char *filename, char **filebuf[])
+{
+    read_order order = {0, 1};
+    return read_lines(order, method_location, filename, filebuf);
+}
+
+static unsigned
+read_lines(read_order order, const unsigned method_location,
+           const char *filename, char **filebuf[])
 {
     FILE *fp;
 
@@ -17,12 +34,18 @@ read_lines(const unsigned method_location, const char *filename, char **filebuf[
     char **current_linebuf = NULL;
     size_t current_linebuf_size = 0;
     unsigned rl_n = 0;
-    unsigned line_count = 1;
+    unsigned line_count = 0;
 
     while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
-        if (line_count < method_location) {
-            line_count++;
-            continue;
+        line_count++;
+        if (order.forward) {
+            if (line_count < method_location) {
+                continue;
+            }
+        } else if (order.backward) {
+            if (line_count > method_location) {
+                break;
+            }
         }
 
         if ((rl_n != 0) && (rl_n % (MAXLINES-1) == 0)) {
@@ -261,6 +284,47 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
     return Qnil;
 }
 
+static void
+strnprep(char *s, const char *t, size_t len)
+{
+    size_t i;
+
+    memmove(s + len, s, strlen(s) + 1);
+
+    for (i = 0; i < len; ++i) {
+        s[i] = t[i];
+    }
+}
+
+static VALUE
+find_comment(char **filebuf[], const unsigned method_location,
+             const unsigned relevant_lines_n)
+{
+    char comment[COMMENT_SIZE];
+    comment[0] = '\0';
+
+    int i = method_location - 2;
+
+    while ((*filebuf)[i][0] == '\n') {
+        i--;
+        continue;
+    }
+
+    if (!is_comment((*filebuf)[i], strlen((*filebuf)[i]))) {
+        return rb_str_new("", 0);
+    } else {
+        while (is_comment((*filebuf)[i],  strlen((*filebuf)[i]))) {
+            strnprep(comment, (*filebuf)[i],  strlen((*filebuf)[i]));
+            i--;
+        }
+
+        return rb_str_new2(comment);
+    }
+
+    free_memory_for_file(filebuf, relevant_lines_n);
+    return Qnil;
+}
+
 static char **
 allocate_memory_for_file(void)
 {
@@ -306,9 +370,8 @@ mMethodExtensions_source(VALUE self)
     const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
 
     char **filebuf = allocate_memory_for_file();
-    const unsigned relevant_lines_n = read_lines(method_location, filename,
-                                                       &filebuf);
-
+    const unsigned relevant_lines_n = read_lines_after(method_location,
+                                                       filename, &filebuf);
     VALUE source = find_source(&filebuf, relevant_lines_n);
 
     if (NIL_P(source)) {
@@ -320,6 +383,36 @@ mMethodExtensions_source(VALUE self)
     return source;
 }
 
+static VALUE
+mMethodExtensions_comment(VALUE self)
+{
+    VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
+    VALUE name = rb_funcall(self, rb_intern("name"), 0);
+
+    if (NIL_P(source_location)) {
+        rb_raise(rb_eSourceNotFoundError, "could not locate comment for %s!",
+                 RSTRING_PTR(rb_sym2str(name)));
+    }
+
+    const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
+    const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
+
+
+    char **filebuf = allocate_memory_for_file();
+    const unsigned relevant_lines_n = read_lines_before(method_location,
+                                                        filename, &filebuf);
+    VALUE comment = find_comment(&filebuf, method_location, relevant_lines_n);
+
+    if (NIL_P(comment)) {
+        rb_raise(rb_eSourceNotFoundError, "could not locate comment for %s!",
+                 RSTRING_PTR(rb_sym2str(name)));
+    }
+    free_memory_for_file(&filebuf, relevant_lines_n);
+
+    return comment;
+}
+
+
 void Init_fast_method_source(void)
 {
     VALUE rb_mFastMethodSource = rb_define_module_under(rb_cObject, "FastMethodSource");
@@ -328,4 +421,5 @@ void Init_fast_method_source(void)
     VALUE rb_mMethodExtensions = rb_define_module_under(rb_mFastMethodSource, "MethodExtensions");
 
     rb_define_method(rb_mMethodExtensions, "source", mMethodExtensions_source, 0);
+    rb_define_method(rb_mMethodExtensions, "comment", mMethodExtensions_comment, 0);
 }
