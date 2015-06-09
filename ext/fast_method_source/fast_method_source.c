@@ -397,7 +397,6 @@ mMethodExtensions_comment(VALUE self)
     const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
     const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
 
-
     char **filebuf = allocate_memory_for_file();
     const unsigned relevant_lines_n = read_lines_before(method_location,
                                                         filename, &filebuf);
