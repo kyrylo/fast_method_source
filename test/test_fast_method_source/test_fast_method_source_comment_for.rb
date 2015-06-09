@@ -70,4 +70,12 @@ class TestFastMethodSource < Minitest::Test
 
     assert_match(/# Life is strange/, FastMethodSource.comment_for(method))
   end
+
+  def test_comment_for_no_comment
+    method = proc {
+      args.first + args.last
+    }
+
+    assert_equal '', FastMethodSource.comment_for(method)
+  end
 end
