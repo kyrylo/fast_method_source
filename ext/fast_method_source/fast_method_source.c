@@ -72,12 +72,7 @@ read_lines(read_order order, const unsigned method_location,
 static void
 reallocate_linebuf(char **linebuf, const unsigned cl_len)
 {
-    char *tmp_line;
-
-    if ((tmp_line = REALLOC_N(*linebuf, char, cl_len + 1)) == NULL) {
-        rb_raise(rb_eNoMemError, "failed to allocate memory");
-    }
-
+    char *tmp_line = REALLOC_N(*linebuf, char, cl_len + 1);
     *linebuf = tmp_line;
 }
 
@@ -87,28 +82,17 @@ reallocate_filebuf(char **lines[], unsigned rl_len)
     unsigned new_size = rl_len + MAXLINES + 1;
     char **temp_lines = REALLOC_N(*lines, char *, new_size);
 
-    if (temp_lines == NULL) {
-        rb_raise(rb_eNoMemError, "failed to allocate memory");
-    } else {
-        *lines = temp_lines;
+    *lines = temp_lines;
 
-        for (int i = 0; i < MAXLINES; i++) {
-            if (((*lines)[rl_len + i] = ALLOC_N(char, MAXLINELEN)) == NULL) {
-                rb_raise(rb_eNoMemError, "failed to allocate memory");
-            }
-        }
+    for (int i = 0; i < MAXLINES; i++) {
+        (*lines)[rl_len + i] = ALLOC_N(char, MAXLINELEN);
     }
 }
 
 static void
 realloc_comment(char **comment, unsigned len)
 {
-    char *tmp_comment;
-
-     if ((tmp_comment = REALLOC_N(*comment, char, len)) == NULL) {
-        rb_raise(rb_eNoMemError, "failed to allocate memory");
-    }
-
+    char *tmp_comment = REALLOC_N(*comment, char, len);
     *comment = tmp_comment;
 }
 
@@ -358,16 +342,10 @@ find_comment(char **filebuf[], const unsigned method_location,
 static char **
 allocate_memory_for_file(void)
 {
-    char **file;
-
-    if ((file = ALLOC_N(char *, MAXLINES)) == NULL) {
-        rb_raise(rb_eNoMemError, "failed to allocate memory");
-    }
+    char **file = ALLOC_N(char *, MAXLINES);
 
     for (int i = 0; i < MAXLINES; i++) {
-        if ((file[i] = ALLOC_N(char, MAXLINELEN)) == NULL) {
-            rb_raise(rb_eNoMemError, "failed to allocate memory");
-        };
+        file[i] = ALLOC_N(char, MAXLINELEN);
     }
 
     return file;
@@ -448,7 +426,6 @@ mMethodExtensions_comment(VALUE self)
 
     return comment;
 }
-
 
 void Init_fast_method_source(void)
 {
