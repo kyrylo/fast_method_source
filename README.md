@@ -54,7 +54,7 @@ Method Source is about 5-10x faster than its competitor.
 I'd be remiss if I didn't mention that there's also room for further speed
 improvements. The benchmarks below represent comparison of both libraries.
 
-#### #commend_and_source
+#### #comment_and_source
 ##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
 This is a utility method and method_source doesn't feature it.
