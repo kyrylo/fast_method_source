@@ -17,7 +17,7 @@ static const char *null_filename = "/dev/null";
 #endif
 
 #define MAXLINES 1000
-#define MAXLINELEN 300
+#define MAXLINELEN 120
 #define COMMENT_SIZE 15000
 
 typedef struct {
