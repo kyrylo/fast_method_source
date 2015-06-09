@@ -49,7 +49,7 @@ static int is_accessor(const char *line);
 static int is_dangling_literal_end(const char *line);
 static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
-static void check_if_nil(VALUE val, VALUE name);
+static void raise_if_nil(VALUE val, VALUE name);
 
 
 #define SAFE_CHAR 'z'
