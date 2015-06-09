@@ -4,7 +4,7 @@ method_list = SystemNavigation.new.all_methods.select do |method|
   if method.source_location
     begin
       FastMethodSource.comment_for(method)
-    rescue
+    rescue FastMethodSource::SourceNotFoundError, IOError
     end
   end
 end
