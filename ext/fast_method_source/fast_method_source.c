@@ -355,18 +355,28 @@ free_memory_for_file(char **file[], const unsigned relevant_lines_n)
     free(*file);
 }
 
+static void
+check_if_nil(VALUE val, VALUE name)
+{
+    if (NIL_P(val)) {
+        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s",
+                 RSTRING_PTR(rb_sym2str(name)));
+    }
+}
+
 static VALUE
 mMethodExtensions_source(VALUE self)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
+
+    check_if_nil(source_location, name);
+
     VALUE rb_filename = RARRAY_AREF(source_location, 0);
     VALUE rb_method_location = RARRAY_AREF(source_location, 1);
 
-    if (NIL_P(source_location) || NIL_P(rb_method_location)) {
-        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
-                 RSTRING_PTR(rb_sym2str(name)));
-    }
+    check_if_nil(rb_filename, name);
+    check_if_nil(rb_method_location, name);
 
     const char *filename = RSTRING_PTR(rb_filename);
     const unsigned method_location = FIX2INT(rb_method_location);
@@ -376,10 +386,7 @@ mMethodExtensions_source(VALUE self)
                                                        filename, &filebuf);
     VALUE source = find_source(&filebuf, relevant_lines_n);
 
-    if (NIL_P(source)) {
-        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
-                 RSTRING_PTR(rb_sym2str(name)));
-    }
+    check_if_nil(source, name);
     free_memory_for_file(&filebuf, relevant_lines_n);
 
     return source;
@@ -390,13 +397,14 @@ mMethodExtensions_comment(VALUE self)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
+
+    check_if_nil(source_location, name);
+
     VALUE rb_filename = RARRAY_AREF(source_location, 0);
     VALUE rb_method_location = RARRAY_AREF(source_location, 1);
 
-    if (NIL_P(source_location) || NIL_P(rb_method_location)) {
-        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
-                 RSTRING_PTR(rb_sym2str(name)));
-    }
+    check_if_nil(rb_filename, name);
+    check_if_nil(rb_method_location, name);
 
     const char *filename = RSTRING_PTR(rb_filename);
     const unsigned method_location = FIX2INT(rb_method_location);
@@ -406,10 +414,7 @@ mMethodExtensions_comment(VALUE self)
                                                         filename, &filebuf);
     VALUE comment = find_comment(&filebuf, method_location, relevant_lines_n);
 
-    if (NIL_P(comment)) {
-        rb_raise(rb_eSourceNotFoundError, "could not locate comment for %s!",
-                 RSTRING_PTR(rb_sym2str(name)));
-    }
+    check_if_nil(comment, name);
     free_memory_for_file(&filebuf, relevant_lines_n);
 
     return comment;

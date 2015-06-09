@@ -192,4 +192,12 @@ class TestFastMethodSource < Minitest::Test
       FastMethodSource.source_for(method)
     }
   end
+
+  def test_source_for_c_method
+    method = Array.instance_method(:pop)
+
+    assert_raises(FastMethodSource::SourceNotFoundError) {
+      FastMethodSource.source_for(method)
+    }
+  end
 end
