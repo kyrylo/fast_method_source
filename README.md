@@ -50,20 +50,40 @@ library is much faster than method_source. The benchmark showed that it's
 about 5-10x faster than its competitor. There's also room for future speed
 improvements.
 
-#### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
+#### #source
+##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
 ```
-Your processor is: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 19437
-Rehearsal ------------------------------------------------------
-fast_method_source  19.200000   1.150000  20.350000 ( 22.144561)
-method_source       95.400000   0.550000  95.950000 (114.498600)
-------------------------------------------- total: 116.300000sec
+Sample methods: 19438
+Rehearsal -----------------------------------------------------------
+FastMethodSource#source  18.760000   1.290000  20.050000 ( 21.802014)
+MethodSource#source     100.100000   0.440000 100.540000 (122.748676)
+------------------------------------------------ total: 120.590000sec
 
-                         user     system      total        real
-fast_method_source  18.010000   1.100000  19.110000 ( 20.718103)
-method_source       89.930000   0.270000  90.200000 (100.268377)
+                              user     system      total        real
+FastMethodSource#source  19.040000   1.170000  20.210000 ( 22.079805)
+MethodSource#source      92.740000   0.300000  93.040000 (103.833941)
+```
+
+#### #comment
+##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
+
+```
+Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
+Counting the number of sample methods...
+Sample methods: 19595
+Rehearsal ------------------------------------------------------------
+FastMethodSource#comment   4.120000   0.520000   4.640000 (  5.188443)
+MethodSource#comment      82.480000   0.330000  82.810000 (103.135012)
+-------------------------------------------------- total: 87.450000sec
+
+                               user     system      total        real
+FastMethodSource#comment   3.580000   0.370000   3.950000 (  4.398557)
+MethodSource#comment      73.390000   0.150000  73.540000 ( 81.880220)
 ```
 
 ### Correctness of output
