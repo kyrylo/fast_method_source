@@ -17,6 +17,10 @@ Gem::Specification.new do |s|
     ext/fast_method_source/node.h
     lib/fast_method_source.rb
     lib/fast_method_source/core_ext.rb
+    VERSION
+    README.md
+    CHANGELOG.md
+    LICENCE.txt
   ]
   s.extensions = ['ext/fast_method_source/extconf.rb']
   s.platform = Gem::Platform::RUBY

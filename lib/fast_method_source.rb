@@ -1,6 +1,15 @@
 require_relative 'fast_method_source/fast_method_source'
 
 module FastMethodSource
+  # The VERSION file must be in the root directory of the library.
+  VERSION_FILE = File.expand_path('../../VERSION', __FILE__)
+
+  VERSION = File.exist?(VERSION_FILE) ?
+              File.read(VERSION_FILE).chomp : '(could not find VERSION file)'
+
+  # The root path of Pry Theme source code.
+  ROOT = File.expand_path(File.dirname(__FILE__))
+
   class Method
     include MethodExtensions
 
