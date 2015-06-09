@@ -74,7 +74,7 @@ reallocate_linebuf(char **linebuf, const unsigned cl_len)
 {
     char *tmp_line;
 
-    if ((tmp_line = realloc(*linebuf, cl_len + 1)) == NULL) {
+    if ((tmp_line = REALLOC_N(*linebuf, char, cl_len + 1)) == NULL) {
         rb_raise(rb_eNoMemError, "failed to allocate memory");
     }
 
@@ -85,7 +85,7 @@ static void
 reallocate_filebuf(char **lines[], unsigned rl_len)
 {
     unsigned new_size = rl_len + MAXLINES + 1;
-    char **temp_lines = realloc(*lines, sizeof(*temp_lines) * new_size);
+    char **temp_lines = REALLOC_N(*lines, char *, new_size);
 
     if (temp_lines == NULL) {
         rb_raise(rb_eNoMemError, "failed to allocate memory");
@@ -93,7 +93,7 @@ reallocate_filebuf(char **lines[], unsigned rl_len)
         *lines = temp_lines;
 
         for (int i = 0; i < MAXLINES; i++) {
-            if (((*lines)[rl_len + i] = malloc(sizeof(char) * MAXLINELEN)) == NULL) {
+            if (((*lines)[rl_len + i] = ALLOC_N(char, MAXLINELEN)) == NULL) {
                 rb_raise(rb_eNoMemError, "failed to allocate memory");
             }
         }
@@ -226,9 +226,9 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
     VALUE rb_expr;
 
     const unsigned expr_size = relevant_lines_n * MAXLINELEN;
-    char *expr = malloc(expr_size);
+    char *expr = ALLOC_N(char, expr_size);
     expr[0] = '\0';
-    char *parseable_expr = malloc(expr_size);
+    char *parseable_expr = ALLOC_N(char, expr_size);
     parseable_expr[0] = '\0';
 
     int l = 0;
@@ -270,15 +270,15 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
         if (should_parse || contains_end_kw(current_line)) {
             if (parse_expr(rb_str_new2(parseable_expr)) != NULL) {
                 rb_expr = rb_str_new2(expr);
-                free(expr);
-                free(parseable_expr);
+                xfree(expr);
+                xfree(parseable_expr);
                 return rb_expr;
             }
         }
     }
 
-    free(expr);
-    free(parseable_expr);
+    xfree(expr);
+    xfree(parseable_expr);
     free_memory_for_file(filebuf, relevant_lines_n);
 
     return Qnil;
@@ -330,12 +330,12 @@ allocate_memory_for_file(void)
 {
     char **file;
 
-    if ((file = malloc(sizeof(*file) * MAXLINES)) == NULL) {
+    if ((file = ALLOC_N(char *, MAXLINES)) == NULL) {
         rb_raise(rb_eNoMemError, "failed to allocate memory");
     }
 
     for (int i = 0; i < MAXLINES; i++) {
-        if ((file[i] = malloc(sizeof(char) * MAXLINELEN)) == NULL) {
+        if ((file[i] = ALLOC_N(char, MAXLINELEN)) == NULL) {
             rb_raise(rb_eNoMemError, "failed to allocate memory");
         };
     }
@@ -349,10 +349,10 @@ free_memory_for_file(char **file[], const unsigned relevant_lines_n)
     int lines_to_free = relevant_lines_n >= MAXLINES ? relevant_lines_n : MAXLINES;
 
     for (int i = 0; i < lines_to_free; i++) {
-        free((*file)[i]);
+        xfree((*file)[i]);
     }
 
-    free(*file);
+    xfree(*file);
 }
 
 static void
