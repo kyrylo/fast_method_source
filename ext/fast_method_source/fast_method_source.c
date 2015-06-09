@@ -316,13 +316,13 @@ find_comment(char **filebuf[], const unsigned method_location,
     size_t current_line_len;
     size_t future_bufsize;
     char *current_line = NULL;
+    VALUE rb_comment;
 
     unsigned long bufsize = COMMENT_SIZE;
     char *comment = ALLOC_N(char, COMMENT_SIZE);
     comment[0] = '\0';
 
     int i = method_location - 2;
-    VALUE rb_comment;
 
     while ((*filebuf)[i][0] == '\n') {
         i--;
@@ -350,7 +350,6 @@ find_comment(char **filebuf[], const unsigned method_location,
         return rb_comment;
     }
 
-    free(current_line);
     xfree(comment);
     free_memory_for_file(filebuf, relevant_lines_n);
     return Qnil;
