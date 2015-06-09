@@ -11,7 +11,7 @@ end
 
 puts "Sample methods: #{method_list.count}"
 
-Benchmark.bmbm do |bm|
+Benchmark.bm do |bm|
   bm.report('FastMethodSource#comment_and_source_for') do
     method_list.each do |method|
       FastMethodSource.comment_and_source_for(method)
