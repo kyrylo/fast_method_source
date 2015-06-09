@@ -28,4 +28,8 @@ module FastMethodSource
   def self.comment_for(method)
     FastMethodSource::Method.new(method).comment
   end
+
+  def self.comment_and_source_for(method)
+    self.comment_for(method) + self.source_for(method)
+  end
 end

@@ -172,4 +172,24 @@ class TestFastMethodSource < Minitest::Test
       FastMethodSource.source_for(method)
     }
   end
+
+  def test_source_for_process_utime
+    method = Process::Tms.instance_method(:utime=)
+
+    # Process::Tms.instance_method(:utime=).source_location
+    # #=> ["<main>", nil]
+    assert_raises(FastMethodSource::SourceNotFoundError) {
+      FastMethodSource.source_for(method)
+    }
+  end
+
+  def test_source_for_etc_name
+    method = Process::Tms.instance_method(:utime=)
+
+    # Etc::Group.instance_method(:name=).source_location
+    # #=> ["/opt/rubies/druby-2.2.2/lib/ruby/2.2.0/x86_64-linux/etc.so", nil]
+    assert_raises(FastMethodSource::SourceNotFoundError) {
+      FastMethodSource.source_for(method)
+    }
+  end
 end

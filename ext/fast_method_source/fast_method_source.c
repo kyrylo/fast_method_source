@@ -360,14 +360,16 @@ mMethodExtensions_source(VALUE self)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
+    VALUE rb_filename = RARRAY_AREF(source_location, 0);
+    VALUE rb_method_location = RARRAY_AREF(source_location, 1);
 
-    if (NIL_P(source_location)) {
+    if (NIL_P(source_location) || NIL_P(rb_method_location)) {
         rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
                  RSTRING_PTR(rb_sym2str(name)));
     }
 
-    const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
-    const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
+    const char *filename = RSTRING_PTR(rb_filename);
+    const unsigned method_location = FIX2INT(rb_method_location);
 
     char **filebuf = allocate_memory_for_file();
     const unsigned relevant_lines_n = read_lines_after(method_location,
@@ -388,14 +390,16 @@ mMethodExtensions_comment(VALUE self)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
+    VALUE rb_filename = RARRAY_AREF(source_location, 0);
+    VALUE rb_method_location = RARRAY_AREF(source_location, 1);
 
-    if (NIL_P(source_location)) {
-        rb_raise(rb_eSourceNotFoundError, "could not locate comment for %s!",
+    if (NIL_P(source_location) || NIL_P(rb_method_location)) {
+        rb_raise(rb_eSourceNotFoundError, "could not locate source for %s!",
                  RSTRING_PTR(rb_sym2str(name)));
     }
 
-    const char *filename = RSTRING_PTR(RARRAY_AREF(source_location, 0));
-    const unsigned method_location = FIX2INT(RARRAY_AREF(source_location, 1));
+    const char *filename = RSTRING_PTR(rb_filename);
+    const unsigned method_location = FIX2INT(rb_method_location);
 
     char **filebuf = allocate_memory_for_file();
     const unsigned relevant_lines_n = read_lines_before(method_location,
