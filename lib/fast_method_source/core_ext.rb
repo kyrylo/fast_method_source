@@ -10,4 +10,10 @@ end
 
 [Method, UnboundMethod, Proc].each do |klass|
   klass.include FastMethodSource::MethodExtensions
+
+  klass.class_eval do
+    def comment_and_source
+      self.comment + self.source
+    end
+  end
 end
