@@ -100,6 +100,18 @@ reallocate_filebuf(char **lines[], unsigned rl_len)
     }
 }
 
+static void
+realloc_comment(char **comment, unsigned len)
+{
+    char *tmp_comment;
+
+     if ((tmp_comment = REALLOC_N(*comment, char, len + 1)) == NULL) {
+        rb_raise(rb_eNoMemError, "failed to allocate memory");
+    }
+
+    *comment = tmp_comment;
+}
+
 static NODE *
 parse_with_silenced_stderr(VALUE rb_str)
 {
@@ -300,10 +312,10 @@ static VALUE
 find_comment(char **filebuf[], const unsigned method_location,
              const unsigned relevant_lines_n)
 {
-    char comment[COMMENT_SIZE];
-    comment[0] = '\0';
+    char *comment = ALLOC_N(char, COMMENT_SIZE);
 
     int i = method_location - 2;
+    VALUE rb_comment;
 
     while ((*filebuf)[i][0] == '\n') {
         i--;
@@ -314,13 +326,17 @@ find_comment(char **filebuf[], const unsigned method_location,
         return rb_str_new("", 0);
     } else {
         while (is_comment((*filebuf)[i],  strlen((*filebuf)[i]))) {
+            realloc_comment(&comment, strlen(comment) + COMMENT_SIZE);
             strnprep(comment, (*filebuf)[i],  strlen((*filebuf)[i]));
             i--;
         }
 
-        return rb_str_new2(comment);
+        rb_comment = rb_str_new2(comment);
+        xfree(comment);
+        return rb_comment;
     }
 
+    xfree(comment);
     free_memory_for_file(filebuf, relevant_lines_n);
     return Qnil;
 }

@@ -16,9 +16,9 @@ static const char *null_filename = "/dev/null";
 #define DUP2(fd, newfd) dup2(fd, newfd)
 #endif
 
-#define MAXLINES 1000
+#define MAXLINES 1200
 #define MAXLINELEN 120
-#define COMMENT_SIZE 15000
+#define COMMENT_SIZE 1200
 
 typedef struct {
     int forward  : 1;
