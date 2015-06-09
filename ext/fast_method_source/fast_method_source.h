@@ -50,6 +50,6 @@ static int is_dangling_literal_end(const char *line);
 static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
 static void raise_if_nil(VALUE val, VALUE name);
-
+static void realloc_comment(char **comment, unsigned len);
 
 #define SAFE_CHAR 'z'
