@@ -28,11 +28,11 @@ typedef struct {
     int backward : 1;
 } read_order;
 
-typedef struct {
+struct filebuf {
     unsigned method_location;
     const char *filename;
     VALUE classname;
-} filebuf_params;
+};
 
 static unsigned read_lines(read_order order, const unsigned method_location,
                            const char *filename, char **filebuf[]);
@@ -60,7 +60,7 @@ static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
 static void raise_if_nil(VALUE val, VALUE name);
 static void realloc_comment(char **comment, unsigned len);
-static char **filebuf_new(VALUE self, filebuf_params *params);
+static char **filebuf_new(VALUE self, struct filebuf *filebuf);
 
 static VALUE rb_eSourceNotFoundError;
 
@@ -435,7 +435,7 @@ raise_if_nil(VALUE val, VALUE name)
 }
 
 static char **
-filebuf_new(VALUE self, filebuf_params *params)
+filebuf_new(VALUE self, struct filebuf *filebuf)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
@@ -448,9 +448,9 @@ filebuf_new(VALUE self, filebuf_params *params)
     raise_if_nil(rb_filename, name);
     raise_if_nil(rb_method_location, name);
 
-    params->filename = RSTRING_PTR(rb_filename);
-    params->method_location = FIX2INT(rb_method_location);
-    params->classname = name;
+    filebuf->filename = RSTRING_PTR(rb_filename);
+    filebuf->method_location = FIX2INT(rb_method_location);
+    filebuf->classname = name;
 
     return allocate_memory_for_file();
 }
@@ -458,8 +458,8 @@ filebuf_new(VALUE self, filebuf_params *params)
 static VALUE
 mMethodExtensions_source(VALUE self)
 {
-    filebuf_params filebuf_params;
-    char **filebuf = filebuf_new(self, &filebuf_params);
+    struct filebuf filebuf_params;
+    char **filebuf = filebuf_new(self, &filebuf);
 
     const unsigned relevant_lines_n = read_lines_after(
         filebuf_params.method_location, filebuf_params.filename, &filebuf);
@@ -475,7 +475,7 @@ mMethodExtensions_source(VALUE self)
 static VALUE
 mMethodExtensions_comment(VALUE self)
 {
-    filebuf_params filebuf_params;
+    struct filebuf filebuf_params;
     char **filebuf = filebuf_new(self, &filebuf_params);
 
     const unsigned relevant_lines_n = read_lines_before(
