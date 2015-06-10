@@ -181,6 +181,8 @@ parse_with_silenced_stderr(VALUE rb_str)
     DUP2(old_stderr, STDERR_FILENO);
     close(old_stderr);
 
+    rb_set_errinfo(Qnil);
+
     return node;
 }
 
