@@ -165,6 +165,7 @@ parse_with_silenced_stderr(VALUE rb_str)
 {
     int old_stderr;
     FILE *null_fd;
+    VALUE last_exception = rb_errinfo();
 
     old_stderr = DUP(STDERR_FILENO);
     fflush(stderr);
@@ -174,14 +175,13 @@ parse_with_silenced_stderr(VALUE rb_str)
     volatile VALUE vparser = rb_parser_new();
     NODE *node = rb_parser_compile_string(vparser, "-", rb_str, 1);
     rb_str_free(rb_str);
+    rb_set_errinfo(last_exception);
 
     fflush(stderr);
     fclose(null_fd);
 
     DUP2(old_stderr, STDERR_FILENO);
     close(old_stderr);
-
-    rb_set_errinfo(Qnil);
 
     return node;
 }
