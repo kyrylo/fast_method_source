@@ -443,7 +443,6 @@ raise_if_nil(VALUE val, VALUE method_name)
     }
 }
 
-
 static void
 filebuf_init(VALUE self, struct filebuf *filebuf)
 {
