@@ -448,6 +448,13 @@ filebuf_init(VALUE self, struct filebuf *filebuf)
     filebuf->lines = allocate_memory_for_file();
 }
 
+static void
+free_filebuf(VALUE retval, struct filebuf *filebuf)
+{
+    raise_if_nil(retval, filebuf->classname);
+    free_memory_for_file(&filebuf->lines, filebuf->relevant_lines);
+}
+
 static VALUE
 mMethodExtensions_source(VALUE self)
 {
@@ -458,8 +465,7 @@ mMethodExtensions_source(VALUE self)
 
     VALUE source = find_source(&filebuf);
 
-    raise_if_nil(source, filebuf.classname);
-    free_memory_for_file(&filebuf.lines, filebuf.relevant_lines);
+    free_filebuf(source, &filebuf);
 
     return source;
 }
@@ -474,8 +480,7 @@ mMethodExtensions_comment(VALUE self)
 
     VALUE comment = find_comment(&filebuf);
 
-    raise_if_nil(comment, filebuf.classname);
-    free_memory_for_file(&filebuf.lines, filebuf.relevant_lines);
+    free_filebuf(comment, &filebuf);
 
     return comment;
 }
