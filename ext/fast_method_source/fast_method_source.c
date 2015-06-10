@@ -32,9 +32,14 @@ typedef struct {
 struct filebuf {
     unsigned method_location;
     const char *filename;
-    VALUE classname;
+    VALUE method_name;
     char **lines;
     unsigned relevant_lines;
+};
+
+struct retval {
+    VALUE val;
+    VALUE method_name;
 };
 
 static void read_lines(read_order order, struct filebuf *filebuf);
@@ -57,7 +62,8 @@ static int is_accessor(const char *line);
 static int is_dangling_literal_end(const char *line);
 static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
-static void raise_if_nil(VALUE val, VALUE name);
+static void raise_if_nil(VALUE val, VALUE method_name);
+static VALUE raise_if_nil_safe(VALUE args);
 static void realloc_comment(char **comment, unsigned len);
 static void filebuf_init(VALUE self, struct filebuf *filebuf);
 static void free_filebuf(VALUE retval, struct filebuf *filebuf);
@@ -333,7 +339,6 @@ find_source(struct filebuf *filebuf)
 
     xfree(expr);
     xfree(parseable_expr);
-    free_memory_for_file(&filebuf->lines, filebuf->relevant_lines);
 
     return Qnil;
 }
@@ -420,14 +425,24 @@ free_memory_for_file(char **file[], const unsigned relevant_lines_n)
     xfree(*file);
 }
 
+static VALUE
+raise_if_nil_safe(VALUE args)
+{
+    struct retval *retval = (struct retval *) args;
+    raise_if_nil(retval->val, retval->method_name);
+
+    return Qnil;
+}
+
 static void
-raise_if_nil(VALUE val, VALUE name)
+raise_if_nil(VALUE val, VALUE method_name)
 {
     if (NIL_P(val)) {
         rb_raise(rb_eSourceNotFoundError, "could not locate source for %s",
-                 RSTRING_PTR(rb_sym2str(name)));
+                 RSTRING_PTR(rb_sym2str(method_name)));
     }
 }
+
 
 static void
 filebuf_init(VALUE self, struct filebuf *filebuf)
@@ -445,15 +460,22 @@ filebuf_init(VALUE self, struct filebuf *filebuf)
 
     filebuf->filename = RSTRING_PTR(rb_filename);
     filebuf->method_location = FIX2INT(rb_method_location);
-    filebuf->classname = name;
+    filebuf->method_name = name;
     filebuf->lines = allocate_memory_for_file();
 }
 
 static void
-free_filebuf(VALUE retval, struct filebuf *filebuf)
+free_filebuf(VALUE val, struct filebuf *filebuf)
 {
-    raise_if_nil(retval, filebuf->classname);
+    int failed;
+    struct retval retval = {val, filebuf->method_name};
+
+    rb_protect(raise_if_nil_safe, (VALUE) &retval, &failed);
     free_memory_for_file(&filebuf->lines, filebuf->relevant_lines);
+
+    if (failed) {
+        rb_jump_tag(failed);
+    }
 }
 
 static VALUE
