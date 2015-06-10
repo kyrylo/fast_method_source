@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.files        = %w[
     ext/fast_method_source/extconf.rb
     ext/fast_method_source/fast_method_source.c
-    ext/fast_method_source/fast_method_source.h
     ext/fast_method_source/node.h
     lib/fast_method_source.rb
     lib/fast_method_source/core_ext.rb
