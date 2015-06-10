@@ -129,18 +129,17 @@ Output.
 
 ### RAM consumption
 
-Memory consumption is considerably higher for Fast Method Source (for the
-benchmarks it used about 800-1500 MB of RES RAM). In fact, since the library is
-very young, it *may* have memory leaks.
+The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
+shows that at this moment the library uses about 450 MB of RAM.
 
 API
 ---
 
 ### General description
 
-The library provides two methods `#source` and `#comment`. There are two ways to
-use Fast Method Source. One way is to monkey-patch relevant core Ruby classes
-and use the methods directly.
+The library provides the following methods: `#comment`, `#source` and
+`#comment_and_source`. There are two ways to use Fast Method Source. One way is
+to monkey-patch relevant core Ruby classes and use the methods directly.
 
 ```ruby
 require 'fast_method_source'
