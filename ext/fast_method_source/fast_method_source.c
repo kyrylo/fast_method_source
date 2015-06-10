@@ -32,19 +32,17 @@ struct filebuf {
     unsigned method_location;
     const char *filename;
     VALUE classname;
+    char **lines;
+    unsigned relevant_lines;
 };
 
-static unsigned read_lines(read_order order, const unsigned method_location,
-                           const char *filename, char **filebuf[]);
-static unsigned read_lines_before(const unsigned method_location,
-                                  const char *filename, char **filebuf[]);
-static unsigned read_lines_after(const unsigned method_location,
-                                 const char *filename, char **filebuf[]);
+static void read_lines(read_order order, struct filebuf *filebuf);
+static void read_lines_before(struct filebuf *filebuf);
+static void read_lines_after(struct filebuf *filebuf);
 static void reallocate_filebuf(char **lines[], unsigned rl_len);
 static void reallocate_linebuf(char **linebuf, const unsigned cl_len);
-static VALUE find_source(char **filebuf[], const unsigned relevant_lines_n);
-static VALUE find_comment(char **filebuf[], const unsigned relevant_lines_n,
-                          const unsigned method_location);
+static VALUE find_source(struct filebuf *filebuf);
+static VALUE find_comment(struct filebuf *filebuf);
 static VALUE mMethodExtensions_source(VALUE self);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
@@ -60,34 +58,31 @@ static int is_dangling_literal_begin(const char *line);
 static void strnprep(char *s, const char *t, size_t len);
 static void raise_if_nil(VALUE val, VALUE name);
 static void realloc_comment(char **comment, unsigned len);
-static char **filebuf_new(VALUE self, struct filebuf *filebuf);
+static void filebuf_init(VALUE self, struct filebuf *filebuf);
 
 static VALUE rb_eSourceNotFoundError;
 
-static unsigned
-read_lines_after(const unsigned method_location,
-                 const char *filename, char **filebuf[])
+static void
+read_lines_after(struct filebuf *filebuf)
 {
     read_order order = {1, 0};
-    return read_lines(order, method_location, filename, filebuf);
+    read_lines(order, filebuf);
 }
 
-static unsigned
-read_lines_before(const unsigned method_location,
-                  const char *filename, char **filebuf[])
+static void
+read_lines_before(struct filebuf *filebuf)
 {
     read_order order = {0, 1};
-    return read_lines(order, method_location, filename, filebuf);
+    read_lines(order, filebuf);
 }
 
-static unsigned
-read_lines(read_order order, const unsigned method_location,
-           const char *filename, char **filebuf[])
+static void
+read_lines(read_order order, struct filebuf *filebuf)
 {
     FILE *fp;
 
-    if ((fp = fopen(filename, "r")) == NULL) {
-        rb_raise(rb_eIOError, "No such file or directory - %s", filename);
+    if ((fp = fopen(filebuf->filename, "r")) == NULL) {
+        rb_raise(rb_eIOError, "No such file or directory - %s", filebuf->filename);
     }
 
     ssize_t cl_len;
@@ -101,20 +96,20 @@ read_lines(read_order order, const unsigned method_location,
     while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
         line_count++;
         if (order.forward) {
-            if (line_count < method_location) {
+            if (line_count < filebuf->method_location) {
                 continue;
             }
         } else if (order.backward) {
-            if (line_count > method_location) {
+            if (line_count > filebuf->method_location) {
                 break;
             }
         }
 
         if ((rl_n != 0) && (rl_n % (MAXLINES-1) == 0)) {
-            reallocate_filebuf(filebuf, rl_n);
+            reallocate_filebuf(&filebuf->lines, rl_n);
         }
 
-        current_linebuf = &(*filebuf)[rl_n];
+        current_linebuf = &(filebuf->lines)[rl_n];
 
         if (cl_len >= MAXLINELEN) {
             reallocate_linebuf(current_linebuf, cl_len);
@@ -127,8 +122,7 @@ read_lines(read_order order, const unsigned method_location,
 
     free(current_line);
     fclose(fp);
-
-    return rl_n;
+    filebuf->relevant_lines = rl_n;
 }
 
 static void
@@ -279,22 +273,22 @@ is_dangling_literal_begin(const char *line)
 }
 
 static VALUE
-find_source(char **filebuf[], const unsigned relevant_lines_n)
+find_source(struct filebuf *filebuf)
 {
     VALUE rb_expr;
 
-    const unsigned expr_size = relevant_lines_n * MAXLINELEN;
+    const unsigned expr_size = filebuf->relevant_lines * MAXLINELEN;
     char *expr = ALLOC_N(char, expr_size);
     expr[0] = '\0';
     char *parseable_expr = ALLOC_N(char, expr_size);
     parseable_expr[0] = '\0';
 
     int l = 0;
-    while ((*filebuf)[l][0] == '\n') {
+    while (filebuf->lines[l][0] == '\n') {
         l++;
         continue;
     }
-    char *first_line = (*filebuf)[l];
+    char *first_line = (filebuf->lines)[l];
 
     char *current_line = NULL;
     int should_parse = 0;
@@ -305,8 +299,8 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
         should_parse = 1;
     }
 
-    for (unsigned i = l; i < relevant_lines_n; i++) {
-        current_line = (*filebuf)[i];
+    for (unsigned i = l; i < filebuf->relevant_lines; i++) {
+        current_line = filebuf->lines[i];
         current_line_len = strlen(current_line);
 
         strncat(expr, current_line, current_line_len);
@@ -337,7 +331,7 @@ find_source(char **filebuf[], const unsigned relevant_lines_n)
 
     xfree(expr);
     xfree(parseable_expr);
-    free_memory_for_file(filebuf, relevant_lines_n);
+    free_memory_for_file(&filebuf->lines, filebuf->relevant_lines);
 
     return Qnil;
 }
@@ -355,8 +349,7 @@ strnprep(char *s, const char *t, size_t len)
 }
 
 static VALUE
-find_comment(char **filebuf[], const unsigned method_location,
-             const unsigned relevant_lines_n)
+find_comment(struct filebuf *filebuf)
 {
     size_t comment_len;
     size_t current_line_len;
@@ -368,17 +361,17 @@ find_comment(char **filebuf[], const unsigned method_location,
     char *comment = ALLOC_N(char, COMMENT_SIZE);
     comment[0] = '\0';
 
-    int i = method_location - 2;
+    int i = filebuf->method_location - 2;
 
-    while ((*filebuf)[i][0] == '\n') {
+    while (filebuf->lines[i][0] == '\n') {
         i--;
         continue;
     }
 
-    if (!is_comment((*filebuf)[i], strlen((*filebuf)[i]))) {
+    if (!is_comment(filebuf->lines[i], strlen(filebuf->lines[i]))) {
         return rb_str_new("", 0);
     } else {
-        while ((current_line = (*filebuf)[i]) &&
+        while ((current_line = filebuf->lines[i]) &&
                is_comment(current_line,  (current_line_len = strlen(current_line)))) {
             comment_len = strlen(comment);
             future_bufsize = comment_len + current_line_len;
@@ -397,7 +390,7 @@ find_comment(char **filebuf[], const unsigned method_location,
     }
 
     xfree(comment);
-    free_memory_for_file(filebuf, relevant_lines_n);
+    free_memory_for_file(&filebuf->lines, filebuf->relevant_lines);
     return Qnil;
 }
 
@@ -434,8 +427,8 @@ raise_if_nil(VALUE val, VALUE name)
     }
 }
 
-static char **
-filebuf_new(VALUE self, struct filebuf *filebuf)
+static void
+filebuf_init(VALUE self, struct filebuf *filebuf)
 {
     VALUE source_location = rb_funcall(self, rb_intern("source_location"), 0);
     VALUE name = rb_funcall(self, rb_intern("name"), 0);
@@ -451,23 +444,21 @@ filebuf_new(VALUE self, struct filebuf *filebuf)
     filebuf->filename = RSTRING_PTR(rb_filename);
     filebuf->method_location = FIX2INT(rb_method_location);
     filebuf->classname = name;
-
-    return allocate_memory_for_file();
+    filebuf->lines = allocate_memory_for_file();
 }
 
 static VALUE
 mMethodExtensions_source(VALUE self)
 {
-    struct filebuf filebuf_params;
-    char **filebuf = filebuf_new(self, &filebuf);
+    struct filebuf filebuf;
 
-    const unsigned relevant_lines_n = read_lines_after(
-        filebuf_params.method_location, filebuf_params.filename, &filebuf);
+    filebuf_init(self, &filebuf);
+    read_lines_after(&filebuf);
 
-    VALUE source = find_source(&filebuf, relevant_lines_n);
+    VALUE source = find_source(&filebuf);
 
-    raise_if_nil(source, filebuf_params.classname);
-    free_memory_for_file(&filebuf, relevant_lines_n);
+    raise_if_nil(source, filebuf.classname);
+    free_memory_for_file(&filebuf.lines, filebuf.relevant_lines);
 
     return source;
 }
@@ -475,16 +466,15 @@ mMethodExtensions_source(VALUE self)
 static VALUE
 mMethodExtensions_comment(VALUE self)
 {
-    struct filebuf filebuf_params;
-    char **filebuf = filebuf_new(self, &filebuf_params);
+    struct filebuf filebuf;
 
-    const unsigned relevant_lines_n = read_lines_before(
-        filebuf_params.method_location, filebuf_params.filename, &filebuf);
-    VALUE comment = find_comment(&filebuf, filebuf_params.method_location,
-                                 relevant_lines_n);
+    filebuf_init(self, &filebuf);
+    read_lines_before(&filebuf);
 
-    raise_if_nil(comment, filebuf_params.classname);
-    free_memory_for_file(&filebuf, relevant_lines_n);
+    VALUE comment = find_comment(&filebuf);
+
+    raise_if_nil(comment, filebuf.classname);
+    free_memory_for_file(&filebuf.lines, filebuf.relevant_lines);
 
     return comment;
 }
