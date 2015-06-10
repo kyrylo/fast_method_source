@@ -60,6 +60,7 @@ static void strnprep(char *s, const char *t, size_t len);
 static void raise_if_nil(VALUE val, VALUE name);
 static void realloc_comment(char **comment, unsigned len);
 static void filebuf_init(VALUE self, struct filebuf *filebuf);
+static void free_filebuf(VALUE retval, struct filebuf *filebuf);
 
 static VALUE rb_eSourceNotFoundError;
 
