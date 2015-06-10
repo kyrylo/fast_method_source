@@ -1,3 +1,6 @@
+// For getline(), fileno() and friends
+#define _XOPEN_SOURCE 700
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ruby.h>
@@ -15,8 +18,6 @@ static const char *null_filename = "/dev/null";
 #define DUP(fd) dup(fd)
 #define DUP2(fd, newfd) dup2(fd, newfd)
 #endif
-
-#define _XOPEN_SOURCE 700
 
 #define MAXLINES 600
 #define MAXLINELEN 90
