@@ -42,6 +42,7 @@ static VALUE find_method_source(struct method_data *data);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
 static void filter_interp(char *line);
+static int contains_skippables(const char *line);
 static int contains_end_kw(const char *line);
 static int is_comment(const char *line, const size_t line_len);
 static int is_static_definition(const char *line);
@@ -121,7 +122,8 @@ read_lines(finder finder, struct method_data *data)
             }
             strncat(expression, current_line, cl_len);
 
-            if (current_line[0] == '\n' || is_comment(current_line, cl_len))
+            if (current_line[0] == '\n' ||
+                is_comment(current_line, cl_len))
                 continue;
 
             if (line_count == data->method_location) {
@@ -145,6 +147,9 @@ read_lines(finder finder, struct method_data *data)
                 realloc_expression(&parse_expression, parse_bufsize);
             }
             strncat(parse_expression, current_line, cl_len);
+
+            if (contains_skippables(current_line))
+                continue;
 
             if (should_parse || contains_end_kw(current_line)) {
                 if (parse_expr(rb_str_new2(parse_expression)) != NULL) {
@@ -249,6 +254,28 @@ filter_interp(char *line)
             line[i] = SAFE_CHAR;
         }
     }
+}
+
+static int
+contains_skippables(const char *line)
+{
+
+    static unsigned short len = 57;
+    static const char *skippables[57] = {
+        " if ", " else ", " then ", " case ", " for ", " in ", " loop ",
+        " unless ", "||", "||=", "&&", " and ", " or ", " do ", " not ",
+        " while ", " = ", " == ", " === ", " > ", " < ", " >= ", " <= ",
+        " << ", " += ", "\"", "'", ":", ",", ".", " % ", "!", "?",
+        " until ", "(&", "|", "(", ")", "~", " * ", " - ", " + ", " / ",
+        " {", " raise ", " fail ", " begin ", " rescue ", " ensure ",
+        ".new", "@", " lambda", " proc", " ->", "[", "]", "$"};
+
+    for (unsigned short i = 0; i < len; i++) {
+        if (strstr(line, skippables[i]) != NULL)
+            return 1;
+    }
+
+    return 0;
 }
 
 static int
