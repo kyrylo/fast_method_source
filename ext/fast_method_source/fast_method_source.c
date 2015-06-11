@@ -106,8 +106,8 @@ read_lines(finder finder, struct method_data *data)
     bufsize = parse_bufsize = EXPRESSION_SIZE;
     line_count = current_linebuf_size = 0;
 
-    int should_parse, dangling_literal;
-    should_parse = dangling_literal = 0;
+    int should_parse, dangling_literal, found_expression;
+    should_parse = dangling_literal = found_expression = 0;
 
     char *expression = ALLOC_N(char, bufsize);
     expression[0] = '\0';
@@ -158,12 +158,8 @@ read_lines(finder finder, struct method_data *data)
 
             if (should_parse || contains_end_kw(current_line)) {
                 if (parse_expr(rb_str_new2(parse_expression)) != NULL) {
-                    rb_expr = rb_str_new2(expression);
-                    xfree(parse_expression);
-                    xfree(expression);
-                    free(current_line);
-                    fclose(fp);
-                    return rb_expr;
+                    found_expression = 1;
+                    break;
                 }
             }
         } else if (finder.comment) {
@@ -180,21 +176,23 @@ read_lines(finder finder, struct method_data *data)
                     bufsize = EXPRESSION_SIZE;
                 }
             } else if (line_count == data->method_location) {
-                rb_expr = rb_str_new2(expression);
-                xfree(parse_expression);
-                xfree(expression);
-                free(current_line);
-                fclose(fp);
-                return rb_expr;
+                found_expression = 1;
+                break;
             }
         }
+    }
+
+    if (found_expression) {
+        rb_expr = rb_str_new2(expression);
+    } else {
+        rb_expr = Qnil;
     }
 
     xfree(parse_expression);
     xfree(expression);
     free(current_line);
     fclose(fp);
-    return Qnil;
+    return (rb_expr);
 }
 
 static void
