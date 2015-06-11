@@ -283,17 +283,7 @@ is_comment(const char *line, const size_t line_len)
     for (size_t i = 0; i < line_len; i++) {
         if (line[i] == ' ')
             continue;
-
-        if (line[i] == '#' && line[i + 1] != '{') {
-            for (size_t j = i - 1; j != 0; j--) {
-                if (line[j] != ' ')
-                    return 0;
-            }
-
-            return 1;
-        } else {
-            return 0;
-        }
+        return line[i] == '#' && line[i + 1] != '{';
     }
 
     return 0;
