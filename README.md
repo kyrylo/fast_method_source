@@ -129,7 +129,7 @@ Output.
 ### RAM consumption
 
 The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
-shows that at this moment the library uses about 450 MB of RAM.
+shows that at this moment the library uses about 100-150 MB of RES RAM.
 
 API
 ---
@@ -241,10 +241,6 @@ for a while and perhaps to drink a cup of tea.
 
 The goal of the project is to be able to query 50K methods in less than 15
 seconds. Whether it's possible or not is to be determined.
-
-### Decrease memory consumption
-
-I'm not happy about the current rates. To be investigated.
 
 Licence
 -------
