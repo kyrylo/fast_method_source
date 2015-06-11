@@ -47,7 +47,6 @@ IGNORE_LIST = [
   /subirb.rb/,
   /ws-for-case-2.rb/,
   /test_utilities.rb/,
-  /irb\/frame.rb/,
   /psych\/parser.rb/,
   /rake\/contrib\/sys.rb/,
   /rake\/gempackagetask.rb/,
@@ -56,7 +55,11 @@ IGNORE_LIST = [
   /rake\/runtest.rb/,
   /tcl/,
   /minitest\/spec.rb/,
-  /rubygems\/exceptions.rb/
+  /rubygems\/exceptions.rb/,
+  /\/irb\//,
+  /\/rake\//,
+  /package\/old.rb/,
+  /rubygems\/rdoc.rb/
 ]
 
 files_to_require = Dir.glob(stdlib_files).reject do |p|
