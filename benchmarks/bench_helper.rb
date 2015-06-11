@@ -54,7 +54,9 @@ IGNORE_LIST = [
   /rake\/rdoctask.rb/,
   /ruby182_test_unit_fix.rb/,
   /rake\/runtest.rb/,
-  /tcl/
+  /tcl/,
+  /minitest\/spec.rb/,
+  /rubygems\/exceptions.rb/
 ]
 
 files_to_require = Dir.glob(stdlib_files).reject do |p|
