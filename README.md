@@ -9,7 +9,15 @@ Table of Contents
 * <a href="#description">Description</a>
 * <a href="#installation">Installation</a>
 * <a href="#synopsis">Synopsis</a>
+    * <a href="#speed-improvements">Speed Improvements</a>
+        * <a href="#source">#source</a>
+        * <a href="#comment">#comment</a>
+        * <a href="#source-and-comment">#source_and_comment</a>
+    * <a href="#correctness-of-output">Correctness Of Output</a>
+    * <a href="#ram-consumption">RAM Consumption</a>
 * <a href="#api">API</a>
+    * <a href="#method-information">Method Information</a>
+        * <a href="#fastmethodsourcesource_formethod">FastMethodSource#source_for(method)</a>
 * <a href="#limitations">Limitations</a>
 * <a href="#roadmap">Roadmap</a>
 * <a href="#licence">Licence</a>
@@ -57,7 +65,7 @@ powers [Pry](https://github.com/pry/pry)'s `show-source`, `show-comment` and
 `find-method` commands, but with a number of key differences that are listed
 below.
 
-### Speed improvements
+### Speed Improvements
 
 The main goal of Fast Method Source is to retrieve information as fast as
 possible. In result, the library is extremely fast and is capable of quering
@@ -120,7 +128,7 @@ Sample methods: 18970
 FastMethodSource#comment_and_source_for  8.240000   0.750000   8.990000 ( 10.036892)
 ```
 
-### Correctness of output
+### Correctness Of Output
 
 Fast Method Source is capable of displaying source code even for dynamically
 defined methods.
@@ -146,7 +154,7 @@ Output.
 That said, you need to be cautious, because sometimes it's not working as
 expected. Feel free to file issues.
 
-### RAM consumption
+### RAM Consumption
 
 The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
 shows that the library uses about 80-140 MB of RES RAM for computing information
@@ -154,8 +162,6 @@ for 19K methods.
 
 API
 ---
-
-### General description
 
 The library provides the following methods: `#comment`, `#source` and
 `#comment_and_source`. There are two ways to use Fast Method Source.
@@ -198,7 +204,7 @@ myproc = proc { |arg|
 FastMethodSource.source_for(myproc) #=> "myproc = proc { |arg|\n..."
 ```
 
-### Method information
+### Method Information
 
 #### FastMethodSource#source_for(method)
 
@@ -249,14 +255,14 @@ may work.
 Roadmap
 -------
 
-### Further speed improvements
+### Further Speed Improvements
 
 Although Fast Method Source is faster than any of its competitors, it's still
 very slow. On average, a mature Rails 4 application has at least 45K
 methods. The goal of the project is to be able to query 50K methods in less than
 15 seconds.
 
-### Optional memoization
+### Optional Memoization
 
 I'm not sure about this, if it's really needed, but it will speed up further
 queries greatly (at the cost of RAM). At this moment I think if I add it, it
