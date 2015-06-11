@@ -206,7 +206,6 @@ parse_with_silenced_stderr(VALUE rb_str)
 
     volatile VALUE vparser = rb_parser_new();
     NODE *node = rb_parser_compile_string(vparser, "-", rb_str, 1);
-    rb_str_free(rb_str);
     rb_set_errinfo(last_exception);
 
     fflush(stderr);
