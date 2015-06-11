@@ -21,9 +21,6 @@ static const char *null_filename = "/dev/null";
 
 #define EXPRESSION_SIZE 80 * 50
 
-#define MAXLINES 600
-#define MAXLINELEN 90
-#define COMMENT_SIZE 1000
 #define SAFE_CHAR 'z'
 
 typedef struct {
@@ -37,16 +34,11 @@ struct method_data {
     VALUE method_name;
 };
 
-struct retval {
-    VALUE val;
-    VALUE method_name;
-};
-
 static VALUE read_lines(finder finder, struct method_data *data);
 static VALUE read_lines_before(struct method_data *data);
 static VALUE read_lines_after(struct method_data *data);
 static VALUE find_method_comment(struct method_data *data);
-static VALUE mMethodExtensions_source(VALUE self);
+static VALUE find_method_source(struct method_data *data);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
 static void filter_interp(char *line);
@@ -59,6 +51,7 @@ static int is_dangling_literal_begin(const char *line);
 static void raise_if_nil(VALUE val, VALUE method_name);
 static void realloc_expression(char **expression, size_t len);
 static void method_data_init(VALUE self, struct method_data *data);
+static VALUE mMethodExtensions_source(VALUE self);
 
 static VALUE rb_eSourceNotFoundError;
 
