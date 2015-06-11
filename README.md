@@ -3,7 +3,8 @@
 
 * Repository: [https://github.com/kyrylo/fast_method_source/][repo]
 
-### Quick Menu:
+Table of Contents
+-----------------
 
 * <a href="#description">Description</a>
 * <a href="#installation">Installation</a>
