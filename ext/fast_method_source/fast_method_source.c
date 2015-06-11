@@ -121,7 +121,7 @@ read_lines(finder finder, struct method_data *data)
             }
             strncat(expression, current_line, cl_len);
 
-            if (current_line[0] == '\n')
+            if (current_line[0] == '\n' || is_comment(current_line, cl_len))
                 continue;
 
             if (line_count == data->method_location) {
@@ -129,9 +129,6 @@ read_lines(finder finder, struct method_data *data)
                     should_parse = 1;
                 }
             }
-
-            if (is_comment(current_line, cl_len))
-                continue;
 
             if (is_dangling_literal_end(current_line)) {
                 dangling_literal = 0;
