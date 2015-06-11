@@ -65,7 +65,7 @@ Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
 Sample methods: 19438
        user     system      total        real
-FastMethodSource#comment_and_source_for 26.050000   1.420000  27.470000 ( 30.528066)
+FastMethodSource#comment_and_source_for 16.240000   1.180000  17.420000 ( 19.439981)
 ```
 
 #### #source
@@ -75,33 +75,32 @@ FastMethodSource#comment_and_source_for 26.050000   1.420000  27.470000 ( 30.528
 Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 19596
-Rehearsal ------------------------------------------------------------
-FastMethodSource#comment   4.730000   0.300000   5.030000 (  5.590186)
-MethodSource#comment      73.660000   0.340000  74.000000 ( 89.475399)
--------------------------------------------------- total: 79.030000sec
+Sample methods: 19438
+Rehearsal -----------------------------------------------------------
+FastMethodSource#source  14.220000   0.880000  15.100000 ( 16.844189)
+MethodSource#source     104.140000   0.420000 104.560000 (126.567209)
+------------------------------------------------ total: 119.660000sec
 
-                               user     system      total        real
-FastMethodSource#comment   4.450000   0.300000   4.750000 (  5.278761)
-MethodSource#comment      69.880000   0.110000  69.990000 ( 77.663383)
+                              user     system      total        real
+FastMethodSource#source  14.920000   0.890000  15.810000 ( 17.658905)
+MethodSource#source      96.860000   0.410000  97.270000 (108.131119)
 ```
 
 #### #comment
 ##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
 ```
-Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 19438
-Rehearsal -----------------------------------------------------------
-FastMethodSource#source  20.610000   1.290000  21.900000 ( 24.341358)
-MethodSource#source      92.730000   0.470000  93.200000 (111.384362)
------------------------------------------------- total: 115.100000sec
+Sample methods: 19596
+Rehearsal ------------------------------------------------------------
+FastMethodSource#comment   1.790000   0.210000   2.000000 (  2.229802)
+MethodSource#comment      85.020000   0.370000  85.390000 (103.061652)
+-------------------------------------------------- total: 87.390000sec
 
-                              user     system      total        real
-FastMethodSource#source  20.990000   1.150000  22.140000 ( 24.612721)
-MethodSource#source      86.390000   0.290000  86.680000 ( 96.241494)
+                               user     system      total        real
+FastMethodSource#comment   1.620000   0.250000   1.870000 (  2.072023)
+MethodSource#comment      84.560000   0.320000  84.880000 ( 94.465574)
 ```
 
 ### Correctness of output
