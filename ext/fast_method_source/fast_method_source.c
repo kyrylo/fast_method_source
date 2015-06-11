@@ -19,6 +19,10 @@ static const char *null_filename = "/dev/null";
 #define DUP2(fd, newfd) dup2(fd, newfd)
 #endif
 
+#ifndef HAVE_RB_SYM2STR
+# define rb_sym2str(obj) rb_id2str(SYM2ID(obj))
+#endif
+
 #define EXPRESSION_SIZE 80 * 50
 
 #define SAFE_CHAR 'z'
