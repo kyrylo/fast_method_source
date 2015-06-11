@@ -1,6 +1,10 @@
 Fast Method Source changelog
 ============================
 
+### v0.3.1 (June 11, 2015)
+
+* Considerable speed improvements
+
 ### v0.3.0 (June 11, 2015)
 
 * _Significantly_ reduced memory consumption (`#comment_and_source` for 19K
