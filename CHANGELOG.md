@@ -1,6 +1,12 @@
 Fast Method Source changelog
 ============================
 
+### v0.3.0 (June 11, 2015)
+
+* _Significantly_ reduced memory consumption (`#comment_and_source` for 19K
+methods uses about 100-150 MB of RES RAM)
+* _Significantly_ decreased time of calculations
+
 ### v0.2.0 (June 11, 2015)
 
 * Significantly reduced memory consumption
