@@ -18,8 +18,14 @@ Table of Contents
 * <a href="#api">API</a>
     * <a href="#method-information">Method Information</a>
         * <a href="#fastmethodsourcesource_formethod">FastMethodSource#source_for(method)</a>
+        * <a href="#fastmethodsourcecomment_formethod">FastMethodSource#comment_for(method)</a>
+        * <a href="#fastmethodsourcecomment_and_source_formethod">FastMethodSource#comment_and_source_for(method)</a>
 * <a href="#limitations">Limitations</a>
+  * <a href="#rubies">Rubies</a>
+  * <a href="#operation-systems">Operation Systems</a>
 * <a href="#roadmap">Roadmap</a>
+  * <a href="#further-speed-improvements">Further Speed Improvements</a>
+  * <a href="#optional-memoization">Optional Memoization</a>
 * <a href="#licence">Licence</a>
 
 Description
@@ -247,7 +253,7 @@ Limitations
 Rubies below 2.2.2 were not tested, so in theory if it quacks like Ruby 2, it
 may work.
 
-### OS'es
+### Operation Systems
 
 * GNU/Linux
 * Mac OS (hopefully)
