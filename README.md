@@ -1,6 +1,17 @@
+<a name="Back_to_top">
 # Fast Method Source
 
 * Repository: [https://github.com/kyrylo/fast_method_source/][repo]
+
+### Quick Menu:
+
+* <a href="#description">Description</a>
+* <a href="#installation">Installation</a>
+* <a href="#synopsis">Synopsis</a>
+* <a href="#api">API</a>
+* <a href="#limitations">Limitations</a>
+* <a href="#roadmap">Roadmap</a>
+* <a href="#licence">Licence</a>
 
 Description
 -----------
@@ -10,7 +21,7 @@ their source code and comments.
 
 ```ruby
 require 'fast_method_source'
-require 'fast_method_source/core_ext'
+require 'fast_method_source/core_ext' # Adds #source to UnboundMethod
 require 'set'
 
 puts Set.instance_method(:merge).source
@@ -40,73 +51,78 @@ All you need is to install the gem.
 Synopsis
 --------
 
-Fast Method Source provides similar functionality to [method_source][ms], which
-is being used by the Pry REPL, but with a number of major key differences.
+Fast Method Source provides functionality similar to [method_source][ms], which
+powers [Pry](https://github.com/pry/pry)'s `show-source`, `show-comment` and
+`find-method` commands, but with a number of key differences that are listed
+below.
 
 ### Speed improvements
 
-The main goal of Fast Method Source is to be as fast as possible. In result, the
-library is much faster than method_source. What's acceptable for Pry, when you
-query only one method, is not acceptable for other use cases such as querying
-all the methods defined in your Ruby process. The benchmark showed that Fast
-Method Source is about 5-10x faster than its competitor.
-
-I'd be remiss if I didn't mention that there's also room for further speed
-improvements. The benchmarks below represent comparison of both libraries.
-
-#### #comment_and_source
-##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
-
-This is a utility method and method_source doesn't feature it.
-
-```
-Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
-Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
-Counting the number of sample methods...
-Sample methods: 19438
-       user     system      total        real
-FastMethodSource#comment_and_source_for 16.240000   1.180000  17.420000 ( 19.439981)
-```
+The main goal of Fast Method Source is to retrieve information as fast as
+possible. In result, the library is extremely fast and is capable of quering
+thousands of methods in a couple of seconds. The benchmarks included in this
+repository show that Fast Method Source outpaces method_source in every aspect
+by far. The results from those benchmarks below show the comparison of these
+libraries.
 
 #### #source
 ##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
+The speed boost of method_source after the rehearsal that can be observed in
+this benchmark comes from the fact that it uses memoization. Fast Method Source
+does not support it at the moment.
+
 ```
 Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 19438
+Sample methods: 18970
 Rehearsal -----------------------------------------------------------
-FastMethodSource#source  14.220000   0.880000  15.100000 ( 16.844189)
-MethodSource#source     104.140000   0.420000 104.560000 (126.567209)
------------------------------------------------- total: 119.660000sec
+FastMethodSource#source   6.340000   0.460000   6.800000 (  7.616361)
+MethodSource#source      86.030000   0.500000  86.530000 (104.094356)
+------------------------------------------------- total: 93.330000sec
 
                               user     system      total        real
-FastMethodSource#source  14.920000   0.890000  15.810000 ( 17.658905)
-MethodSource#source      96.860000   0.410000  97.270000 (108.131119)
+FastMethodSource#source   6.830000   0.590000   7.420000 (  8.258469)
+MethodSource#source      80.470000   0.310000  80.780000 ( 89.864366)
 ```
 
 #### #comment
 ##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 
 ```
+Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
 Sample methods: 19596
 Rehearsal ------------------------------------------------------------
-FastMethodSource#comment   1.790000   0.210000   2.000000 (  2.229802)
-MethodSource#comment      85.020000   0.370000  85.390000 (103.061652)
--------------------------------------------------- total: 87.390000sec
+FastMethodSource#comment   1.820000   0.240000   2.060000 (  2.300117)
+MethodSource#comment      77.020000   0.360000  77.380000 ( 94.672830)
+-------------------------------------------------- total: 79.440000sec
 
                                user     system      total        real
-FastMethodSource#comment   1.620000   0.250000   1.870000 (  2.072023)
-MethodSource#comment      84.560000   0.320000  84.880000 ( 94.465574)
+FastMethodSource#comment   1.570000   0.230000   1.800000 (  1.997811)
+MethodSource#comment      71.410000   0.160000  71.570000 ( 79.657388)
+```
+
+#### #comment_and_source
+##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
+
+This is a convenience method, and method_source doesn't have it.
+
+```
+Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
+Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
+Counting the number of sample methods...
+Sample methods: 18970
+       user     system      total        real
+FastMethodSource#comment_and_source_for  8.240000   0.750000   8.990000 ( 10.036892)
 ```
 
 ### Correctness of output
 
 Fast Method Source is capable of displaying source code even for dynamically
-defined methods (there are some crazy methods in stdlib).
+defined methods.
 
 ```ruby
 require 'fast_method_source'
@@ -126,10 +142,14 @@ Output.
             end
 ```
 
+That said, you need to be cautious, because sometimes it's not working as
+expected. Feel free to file issues.
+
 ### RAM consumption
 
 The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
-shows that at this moment the library uses about 100-150 MB of RES RAM.
+shows that the library uses about 80-140 MB of RES RAM for computing information
+for 19K methods.
 
 API
 ---
@@ -137,27 +157,26 @@ API
 ### General description
 
 The library provides the following methods: `#comment`, `#source` and
-`#comment_and_source`. There are two ways to use Fast Method Source. One way is
-to monkey-patch relevant core Ruby classes and use the methods directly.
+`#comment_and_source`. There are two ways to use Fast Method Source.
+
+One way is to monkey-patch relevant core Ruby classes and use the methods
+directly.
 
 ```ruby
 require 'fast_method_source'
-require 'fast_method_source/core_ext'
+require 'fast_method_source/core_ext' # <= monkey-patches
 
-# With UnboundMethod
-Set.instance_method(:merge).source
-#=> "  def merge(enum)\n..."
+# Monkey-patch of UnboundMethod
+Set.instance_method(:merge).source #=> "  def merge(enum)\n..."
 
-# With Method
-Set.method(:[]).source
-#=> "  def self.[](*ary)\n..."
+# Monkey-patch of Method
+Set.method(:[]).source #=> "  def self.[](*ary)\n..."
 
-# With Proc (or lambda)
+# Monkey-patch of Proc (or lambda)
 myproc = proc { |arg|
   arg + 1
 }
-myproc.source
-#=> "myproc = proc { |arg|\n..."
+myproc.source #=> "myproc = proc { |arg|\n..."
 ```
 
 The other way is by using these methods defined on the library's class directly.
@@ -166,22 +185,19 @@ The other way is by using these methods defined on the library's class directly.
 require 'fast_method_source'
 
 # With UnboundMethod
-FastMethodSource.source_for(Set.instance_method(:merge))
-#=> "  def merge(enum)\n..."
+FastMethodSource.source_for(Set.instance_method(:merge)) #=> "  def merge(enum)\n..."
 
 # With Method
-FastMethodSource.source_for(Set.method(:[]))
-#=> "  def self.[](*ary)\n..."
+FastMethodSource.source_for(Set.method(:[])) #=> "  def self.[](*ary)\n..."
 
 # With Proc (or lambda)
 myproc = proc { |arg|
   arg + 1
 }
-FastMethodSource.source_for(myproc)
-#=> "myproc = proc { |arg|\n..."
+FastMethodSource.source_for(myproc) #=> "myproc = proc { |arg|\n..."
 ```
 
-### Methods
+### Method information
 
 #### FastMethodSource#source_for(method)
 
@@ -235,12 +251,19 @@ Roadmap
 ### Further speed improvements
 
 Although Fast Method Source is faster than any of its competitors, it's still
-very slow. On average, a mature Rails 4 application has at least 45K methods. In
-order to query all those methods for their source code, you would need to wait
-for a while and perhaps to drink a cup of tea.
+very slow. On average, a mature Rails 4 application has at least 45K
+methods. The goal of the project is to be able to query 50K methods in less than
+15 seconds.
 
-The goal of the project is to be able to query 50K methods in less than 15
-seconds. Whether it's possible or not is to be determined.
+### Optional memoization
+
+I'm not sure about this, if it's really needed, but it will speed up further
+queries greatly (at the cost of RAM). At this moment I think if I add it, it
+should be optional and configurable like this:
+
+```ruby
+FastMethodSource.memoization = true # or `false`
+```
 
 Licence
 -------
