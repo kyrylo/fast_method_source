@@ -1,5 +1,6 @@
 # coding: utf-8
 require 'benchmark'
+require 'rbconfig'
 
 def require_dep(dep_name)
   require dep_name
@@ -26,7 +27,7 @@ require_dep 'method_source'
 require_dep 'system_navigation'
 require_dep 'sys/cpu'
 
-stdlib_files = File.join(ENV['RUBY_ROOT'], "lib/ruby/2*/**/*.rb")
+stdlib_files = File.join(RbConfig::CONFIG['rubylibdir'], "**/*.rb")
 IGNORE_LIST = [
   /tkmacpkg.rb/,
   /macpkg.rb/,
