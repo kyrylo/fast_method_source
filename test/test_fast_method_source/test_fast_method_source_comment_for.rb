@@ -68,7 +68,7 @@ class TestFastMethodSource < Minitest::Test
       args.first + args.last
     }
 
-    assert_match(/# Life is strange/, FastMethodSource.comment_for(method))
+    assert_equal "", FastMethodSource.comment_for(method)
   end
 
   def test_comment_for_no_comment
