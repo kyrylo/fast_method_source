@@ -66,6 +66,7 @@ static VALUE read_lines_after(struct method_data *data);
 static VALUE find_method_comment(struct method_data *data);
 static VALUE find_method_source(struct method_data *data);
 static VALUE find_comment_expression(struct method_data *data);
+static VALUE find_source_expression(struct method_data *data);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
 static void filter_interp(char *line);
@@ -176,7 +177,7 @@ find_comment_expression(struct method_data *data)
 }
 
 static VALUE
-read_lines(finder finder, struct method_data *data)
+find_source_expression(struct method_data *data)
 {
     FILE *fp;
     if ((fp = fopen(data->filename, "r")) == NULL) {
@@ -184,7 +185,7 @@ read_lines(finder finder, struct method_data *data)
     }
 
     ssize_t cl_len;
-    VALUE rb_expr;
+    VALUE rb_expr = Qnil;
 
     size_t bufsize, parse_bufsize, future_bufsize, future_parse_bufsize,
         current_linebuf_size, line_count;
@@ -192,8 +193,8 @@ read_lines(finder finder, struct method_data *data)
     bufsize = parse_bufsize = EXPRESSION_SIZE;
     line_count = current_linebuf_size = 0;
 
-    int should_parse, dangling_literal, found_expression;
-    should_parse = dangling_literal = found_expression = 0;
+    int should_parse, dangling_literal;
+    should_parse = dangling_literal = 0;
 
     char *expression = ALLOC_N(char, bufsize);
     expression[0] = '\0';
@@ -203,63 +204,53 @@ read_lines(finder finder, struct method_data *data)
 
     char *current_line = NULL;
 
-    if (finder.comment) {
-        return find_comment_expression(data);
-    } else if (finder.source) {
-        while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
-            line_count++;
+    while ((cl_len = getline(&current_line, &current_linebuf_size, fp)) != -1) {
+        line_count++;
 
-            if (finder.source && line_count >= data->method_location) {
-                future_bufsize = strlen(expression) + cl_len;
-                if (future_bufsize >= bufsize) {
-                    bufsize = future_bufsize + EXPRESSION_SIZE + 1;
-                    realloc_expression(&expression, bufsize);
+        if (line_count >= data->method_location) {
+            future_bufsize = strlen(expression) + cl_len;
+            if (future_bufsize >= bufsize) {
+                bufsize = future_bufsize + EXPRESSION_SIZE + 1;
+                realloc_expression(&expression, bufsize);
+            }
+            strncat(expression, current_line, cl_len);
+
+            if (current_line[0] == '\n' ||
+                is_comment(current_line, cl_len))
+                continue;
+
+            if (line_count == data->method_location) {
+                if (is_static_definition(current_line) || is_accessor(current_line)) {
+                    should_parse = 1;
                 }
-                strncat(expression, current_line, cl_len);
+            }
 
-                if (current_line[0] == '\n' ||
-                    is_comment(current_line, cl_len))
-                    continue;
+            if (is_dangling_literal_end(current_line)) {
+                dangling_literal = 0;
+            } else if (is_dangling_literal_begin(current_line)) {
+                dangling_literal = 1;
+            } else if (dangling_literal) {
+                continue;
+            }
 
-                if (line_count == data->method_location) {
-                    if (is_static_definition(current_line) || is_accessor(current_line)) {
-                        should_parse = 1;
-                    }
-                }
+            filter_interp(current_line);
+            future_parse_bufsize = strlen(parse_expression) + cl_len;
+            if (future_parse_bufsize >= parse_bufsize) {
+                parse_bufsize = future_parse_bufsize + EXPRESSION_SIZE + 1;
+                realloc_expression(&parse_expression, parse_bufsize);
+            }
+            strncat(parse_expression, current_line, cl_len);
 
-                if (is_dangling_literal_end(current_line)) {
-                    dangling_literal = 0;
-                } else if (is_dangling_literal_begin(current_line)) {
-                    dangling_literal = 1;
-                } else if (dangling_literal) {
-                    continue;
-                }
+            if (contains_skippables(current_line))
+                continue;
 
-                filter_interp(current_line);
-                future_parse_bufsize = strlen(parse_expression) + cl_len;
-                if (future_parse_bufsize >= parse_bufsize) {
-                    parse_bufsize = future_parse_bufsize + EXPRESSION_SIZE + 1;
-                    realloc_expression(&parse_expression, parse_bufsize);
-                }
-                strncat(parse_expression, current_line, cl_len);
-
-                if (contains_skippables(current_line))
-                    continue;
-
-                if (should_parse || contains_end_kw(current_line)) {
-                    if (parse_expr(rb_str_new2(parse_expression)) != NULL) {
-                        found_expression = 1;
-                        break;
-                    }
+            if (should_parse || contains_end_kw(current_line)) {
+                if (parse_expr(rb_str_new2(parse_expression)) != NULL) {
+                    rb_expr = rb_str_new2(expression);
+                    break;
                 }
             }
         }
-    }
-
-    if (found_expression) {
-        rb_expr = rb_str_new2(expression);
-    } else {
-        rb_expr = Qnil;
     }
 
     xfree(parse_expression);
@@ -268,6 +259,19 @@ read_lines(finder finder, struct method_data *data)
     fclose(fp);
 
     return (rb_expr);
+}
+
+static VALUE
+read_lines(finder finder, struct method_data *data)
+{
+
+    if (finder.comment) {
+        return find_comment_expression(data);
+    } else if (finder.source) {
+        return find_source_expression(data);
+    }
+
+    return Qnil;
 }
 
 static void
