@@ -146,9 +146,10 @@ find_comment_expression(struct method_data *data)
     char *prev = NULL;
 
     while (line_count-- != 0) {
-        rest = memrchr(map, '\n', offset - 1);
+        rest = memrchr(map, '\n', offset - 2);
+
         if (rest == NULL) {
-            rest = memchr(map, '\n', offset);
+            rest = memrchr(map, '\n', offset);
         } else {
             rest++;
         }
@@ -390,6 +391,7 @@ is_comment(const char *line, const size_t line_len)
     for (size_t i = 0; i < line_len; i++) {
         if (line[i] == ' ')
             continue;
+
         return line[i] == '#' && line[i + 1] != '{';
     }
 

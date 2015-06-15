@@ -78,4 +78,10 @@ class TestFastMethodSource < Minitest::Test
 
     assert_equal '', FastMethodSource.comment_for(method)
   end
+
+  def test_comment_for_kernel_require
+    method = Kernel.instance_method(:require)
+    assert_match(/##\n  # When RubyGems is required, Kernel#require is replaced/,
+                 FastMethodSource.comment_for(method))
+  end
 end
