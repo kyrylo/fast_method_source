@@ -247,7 +247,8 @@ Limitations
 
 ### Rubies
 
-* CRuby 2.2.2
+* CRuby 2.1.x
+* CRuby 2.2.x
 * CRuby 2.3.0dev and higher
 
 Rubies below 2.2.2 were not tested, so in theory if it quacks like Ruby 2, it
