@@ -83,8 +83,8 @@ class TestFastMethodSource < Minitest::Test
   end
 
   def test_source_for_kernel_require
-    method = Kernel.instance_method(:require)
-    expected = /def require path\n    RUBYGEMS_ACTIVATION_MONITOR.enter\n.+raise load_error\n\s+end\n\z/m
+    method = SampleClass.instance_method(:kernel_require)
+    expected = /def kernel_require path\n    RUBYGEMS_ACTIVATION_MONITOR.enter\n.+raise load_error\n\s+end\n\z/m
     assert_match(expected, FastMethodSource.source_for(method))
   end
 
