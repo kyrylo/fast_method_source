@@ -91,15 +91,15 @@ does not support it at the moment.
 Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 18970
+Sample methods: 19280
 Rehearsal -----------------------------------------------------------
-FastMethodSource#source   6.340000   0.460000   6.800000 (  7.616361)
-MethodSource#source      86.030000   0.500000  86.530000 (104.094356)
-------------------------------------------------- total: 93.330000sec
+FastMethodSource#source   0.760000   0.240000   1.000000 (  1.104455)
+MethodSource#source      53.240000   0.250000  53.490000 ( 59.304424)
+------------------------------------------------- total: 54.490000sec
 
                               user     system      total        real
-FastMethodSource#source   6.830000   0.590000   7.420000 (  8.258469)
-MethodSource#source      80.470000   0.310000  80.780000 ( 89.864366)
+FastMethodSource#source   0.610000   0.190000   0.800000 (  0.890971)
+MethodSource#source      51.770000   0.230000  52.000000 ( 57.640986)
 ```
 
 #### #comment
@@ -109,15 +109,15 @@ MethodSource#source      80.470000   0.310000  80.780000 ( 89.864366)
 Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 19596
+Sample methods: 19437
 Rehearsal ------------------------------------------------------------
-FastMethodSource#comment   1.820000   0.240000   2.060000 (  2.300117)
-MethodSource#comment      77.020000   0.360000  77.380000 ( 94.672830)
--------------------------------------------------- total: 79.440000sec
+FastMethodSource#comment   0.180000   0.170000   0.350000 (  0.395569)
+MethodSource#comment      19.860000   0.230000  20.090000 ( 36.373289)
+-------------------------------------------------- total: 20.440000sec
 
                                user     system      total        real
-FastMethodSource#comment   1.570000   0.230000   1.800000 (  1.997811)
-MethodSource#comment      71.410000   0.160000  71.570000 ( 79.657388)
+FastMethodSource#comment   0.270000   0.190000   0.460000 (  0.520414)
+MethodSource#comment      19.360000   0.020000  19.380000 ( 21.726528)
 ```
 
 #### #comment_and_source
@@ -129,9 +129,9 @@ This is a convenience method, and method_source doesn't have it.
 Processor: Intel(R) Core(TM) i5-2410M CPU @ 2.30GHz
 Platform: ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 Counting the number of sample methods...
-Sample methods: 18970
+Sample methods: 19435
        user     system      total        real
-FastMethodSource#comment_and_source_for  8.240000   0.750000   8.990000 ( 10.036892)
+FastMethodSource#comment_and_source_for  0.810000   0.420000   1.230000 (  1.374435)
 ```
 
 ### Correctness Of Output
