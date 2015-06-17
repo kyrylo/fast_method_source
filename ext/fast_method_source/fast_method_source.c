@@ -45,10 +45,6 @@ memrchr(const void *s, int c, size_t n)
 void *memrchr(const void *s, int c, size_t n);
 #endif
 
-#define EXPR_SIZE 80 * 50
-
-#define SAFE_CHAR 'z'
-
 typedef struct {
     int source  : 1;
     int comment : 1;
@@ -289,7 +285,6 @@ find_source_expression(struct method_data *data)
 static VALUE
 read_lines(finder finder, struct method_data *data)
 {
-
     if (finder.comment) {
         return find_comment_expression(data);
     } else if (finder.source) {
