@@ -226,4 +226,10 @@ class TestFastMethodSource < Minitest::Test
     method = RSS::Atom::Feed::Entry.instance_method(:author=)
     assert_equal false, FastMethodSource.source_for(method).empty?
   end
+
+  def test_source_for_one_line_method
+    method = SampleClass.instance_method(:one_line_method)
+    expected = "  def one_line_method; 1; end\n"
+    assert_equal(expected, FastMethodSource.source_for(method))
+  end
 end

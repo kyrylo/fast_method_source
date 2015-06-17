@@ -237,6 +237,19 @@ find_source_expression(struct method_data *data)
         if (is_static_definition_start(line) && !inside_static_def) {
             inside_static_def = 1;
             prefix_len = count_prefix_spaces(line);
+            if (contains_end_kw(line)) {
+                if (parse_expr(rb_str_new2(line)) != NULL) {
+                    line[last_ch_idx] = ch;
+                    line[last_ch_idx+1] = '\0';
+                    rb_expr = rb_str_new2(expr_start);
+
+                    if (munmap (map, filestat.st_size) == -1) {
+                        rb_raise(rb_eIOError, "munmap failed for %s", data->filename);
+                    }
+                    close(fd);
+                    return rb_expr;
+                }
+            }
         }
 
         if (line[0] == '\n' || is_comment(line, strlen(line))) {

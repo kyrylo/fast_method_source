@@ -8,4 +8,6 @@ class SampleClass
   def sample_method
     :sample_method
   end
+
+  def one_line_method; 1; end
 end
