@@ -9,10 +9,10 @@ method_list = SystemNavigation.new.all_methods.select do |method|
     rescue FastMethodSource::SourceNotFoundError, IOError
     end
 
-    begin
-      method.source
-    rescue FastMethodSource::SourceNotFoundError, IOError
-    end
+    # begin
+    #   method.source
+    # rescue FastMethodSource::SourceNotFoundError, IOError
+    # end
   end
 end
 

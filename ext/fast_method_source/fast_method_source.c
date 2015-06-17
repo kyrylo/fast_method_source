@@ -69,19 +69,15 @@ static VALUE find_comment_expression(struct method_data *data);
 static VALUE find_source_expression(struct method_data *data);
 static NODE *parse_expr(VALUE rb_str);
 static NODE *parse_with_silenced_stderr(VALUE rb_str);
-static void filter_interp(char *line);
-static int contains_skippables(const char *line);
+static void restore_ch(char *line, char ch, int last_ch_idx);
+static void close_map(int fd, char *map, size_t map_size, const char *filename);
+static void nulify_ch(char *line, char *ch, int last_ch_idx);
 static int contains_end_kw(const char *line);
 static int is_comment(const char *line, const size_t line_len);
-static int is_static_definition(const char *line);
-static int is_accessor(const char *line);
-static int is_dangling_literal_end(const char *line);
-static int is_dangling_literal_begin(const char *line);
 static int is_definition_end(const char *line);
 static int is_static_definition_start(const char *line);
 static size_t count_prefix_spaces(const char *line);
 static void raise_if_nil(VALUE val, VALUE method_name);
-static void realloc_expression(char **expression, size_t len);
 static void method_data_init(VALUE self, struct method_data *data);
 static VALUE mMethodExtensions_source(VALUE self);
 
@@ -228,8 +224,7 @@ find_source_expression(struct method_data *data)
 
         last_ch_idx = offset - next_offset - 1;
 
-        ch = line[last_ch_idx];
-        line[last_ch_idx] = '\0';
+        nulify_ch(line, &ch, last_ch_idx);
 
         expr_end = next_expr;
         offset = next_offset;
@@ -237,16 +232,13 @@ find_source_expression(struct method_data *data)
         if (is_static_definition_start(line) && !inside_static_def) {
             inside_static_def = 1;
             prefix_len = count_prefix_spaces(line);
+
             if (contains_end_kw(line)) {
                 if (parse_expr(rb_str_new2(line)) != NULL) {
-                    line[last_ch_idx] = ch;
-                    line[last_ch_idx+1] = '\0';
+                    restore_ch(line, ch, last_ch_idx);
                     rb_expr = rb_str_new2(expr_start);
 
-                    if (munmap (map, filestat.st_size) == -1) {
-                        rb_raise(rb_eIOError, "munmap failed for %s", data->filename);
-                    }
-                    close(fd);
+                    close_map(fd, map, filestat.st_size, data->filename);
                     return rb_expr;
                 }
             }
@@ -258,19 +250,14 @@ find_source_expression(struct method_data *data)
         }
 
         if (inside_static_def) {
-            if (is_definition_end(line)) {
-                if (count_prefix_spaces(line) == prefix_len) {
-                    line[last_ch_idx] = ch;
-                    line[last_ch_idx+1] = '\0';
-                    rb_expr = rb_str_new2(expr_start);
+            if (is_definition_end(line) &&
+                count_prefix_spaces(line) == prefix_len)
+            {
+                restore_ch(line, ch, last_ch_idx);
+                rb_expr = rb_str_new2(expr_start);
 
-                    if (munmap (map, filestat.st_size) == -1) {
-                        rb_raise(rb_eIOError, "munmap failed for %s", data->filename);
-                    }
-                    close(fd);
-
-                    return rb_expr;
-                }
+                close_map(fd, map, filestat.st_size, data->filename);
+                return rb_expr;
             } else {
                 line[last_ch_idx] = ch;
                 continue;
@@ -281,16 +268,11 @@ find_source_expression(struct method_data *data)
 
         if (should_parse) {
             line[last_ch_idx] = ch;
-            next_ch = line[last_ch_idx+1];
-            line[last_ch_idx+1] = '\0';
+            nulify_ch(line, &next_ch, last_ch_idx + 1);
 
             if (parse_expr(rb_str_new2(expr_start)) != NULL) {
                 rb_expr = rb_str_new2(expr_start);
-
-                if (munmap (map, filestat.st_size) == -1) {
-                    rb_raise(rb_eIOError, "munmap failed for %s", data->filename);
-                }
-                close(fd);
+                close_map(fd, map, filestat.st_size, data->filename);
                 return rb_expr;
             } else {
                 line[last_ch_idx+1] = next_ch;
@@ -299,11 +281,7 @@ find_source_expression(struct method_data *data)
 
         line[last_ch_idx] = ch;
     }
-
-    if (munmap (map, filestat.st_size) == -1) {
-        rb_raise(rb_eIOError, "munmap failed for %s", data->filename);
-    }
-    close(fd);
+    close_map(fd, map, filestat.st_size, data->filename);
 
     return source;
 }
@@ -319,13 +297,6 @@ read_lines(finder finder, struct method_data *data)
     }
 
     return Qnil;
-}
-
-static void
-realloc_expression(char **expression, size_t len)
-{
-    char *tmp_comment = REALLOC_N(*expression, char, len);
-    *expression = tmp_comment;
 }
 
 static NODE *
@@ -359,54 +330,26 @@ parse_expr(VALUE rb_str) {
 }
 
 static void
-filter_interp(char *line)
+restore_ch(char *line, char ch, int last_ch_idx)
 {
-    int brackets = 0;
+    line[last_ch_idx] = ch;
+    line[last_ch_idx + 1] = '\0';
+}
 
-    for (int i = 0; line[i] != '\0'; i++) {
-        if (line[i] == '#') {
-            if (line[i + 1] == '{') {
-                brackets++;
-
-                line[i] = SAFE_CHAR;
-
-                if (line[i - 1] == '\\')
-                    line[i - 1] = SAFE_CHAR;
-            }
-        }
-
-        if (line[i] == '}') {
-            brackets--;
-
-            if (brackets == 0) {
-                line[i] = SAFE_CHAR;
-            }
-        } else if (brackets > 0) {
-            line[i] = SAFE_CHAR;
-        }
+static void
+close_map(int fd, char *map, size_t map_size, const char *filename)
+{
+    close(fd);
+    if (munmap(map, map_size) == -1) {
+        rb_raise(rb_eIOError, "munmap failed for %s", filename);
     }
 }
 
-static int
-contains_skippables(const char *line)
+static void
+nulify_ch(char *line, char *ch, int last_ch_idx)
 {
-
-    static unsigned short len = 57;
-    static const char *skippables[57] = {
-        " if ", " else ", " then ", " case ", " for ", " in ", " loop ",
-        " unless ", "||", "||=", "&&", " and ", " or ", " do ", " not ",
-        " while ", " = ", " == ", " === ", " > ", " < ", " >= ", " <= ",
-        " << ", " += ", "\"", "'", ":", ",", ".", " % ", "!", "?",
-        " until ", "(&", "|", "(", ")", "~", " * ", " - ", " + ", " / ",
-        " {", " raise ", " fail ", " begin ", " rescue ", " ensure ",
-        ".new", "@", " lambda", " proc", " ->", "[", "]", "$"};
-
-    for (unsigned short i = 0; i < len; i++) {
-        if (strstr(line, skippables[i]) != NULL)
-            return 1;
-    }
-
-    return 0;
+    *ch = line[last_ch_idx];
+    line[last_ch_idx] = '\0';
 }
 
 static size_t
@@ -459,14 +402,6 @@ contains_end_kw(const char *line)
 }
 
 static int
-is_accessor(const char *line)
-{
-    return strstr(line, "attr_reader") != NULL ||
-        strstr(line, "attr_writer") != NULL ||
-        strstr(line, "attr_accessor") != NULL;
-}
-
-static int
 is_comment(const char *line, const size_t line_len)
 {
     for (size_t i = 0; i < line_len; i++) {
@@ -495,18 +430,6 @@ is_static_definition_start(const char *line)
     } while (line[i++] != '\0');
 
     return 0;
-}
-
-static int
-is_dangling_literal_end(const char *line)
-{
-    return strstr(line, "}") != NULL && strstr(line, "{") == NULL;
-}
-
-static int
-is_dangling_literal_begin(const char *line)
-{
-    return strstr(line, "%{") != NULL && strstr(line, "}") == NULL;
 }
 
 static void
