@@ -108,4 +108,17 @@ class SampleClass
 
     raise load_error
   end
+
+  def rdoc_escape string
+    string.gsub(/["\\\t\n]/) do |special_character|
+      case special_character
+      when "\t"
+        "\\t"
+      when "\n"
+        "\\n"
+      else
+        "\\#{special_character}"
+      end
+    end
+  end
 end
