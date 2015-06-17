@@ -232,4 +232,12 @@ class TestFastMethodSource < Minitest::Test
     expected = "  def one_line_method; 1; end\n"
     assert_equal(expected, FastMethodSource.source_for(method))
   end
+
+  def test_source_for_rss_content
+    require 'rss'
+
+    method = RSS::DublinCoreModel::DublinCoreDate.instance_method(:content=)
+    expected = /class DublinCore.+\n.+:content=\)\s+end\n\z/m
+    assert_match expected, FastMethodSource.source_for(method)
+  end
 end
