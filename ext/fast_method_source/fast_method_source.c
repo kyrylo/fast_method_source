@@ -419,7 +419,7 @@ is_static_definition_start(const char *line)
             continue;
         } else if (strncmp((line + i), "def ", 4) == 0) {
             return 1;
-        } else if (strncmp((line + i), "class ", 4) == 0) {
+        } else if (strncmp((line + i), "class ", 6) == 0) {
             return 1;
         } else {
             return 0;
