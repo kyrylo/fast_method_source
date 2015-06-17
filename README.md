@@ -24,7 +24,6 @@ Table of Contents
   * <a href="#rubies">Rubies</a>
   * <a href="#operation-systems">Operation Systems</a>
 * <a href="#roadmap">Roadmap</a>
-  * <a href="#further-speed-improvements">Further Speed Improvements</a>
   * <a href="#optional-memoization">Optional Memoization</a>
 * <a href="#licence">Licence</a>
 
@@ -163,8 +162,9 @@ expected. Feel free to file issues.
 ### RAM Consumption
 
 The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
-shows that the library uses about 80-140 MB of RES RAM for computing information
-for 19K methods.
+shows that the library uses about 10 MB of RES RAM for computing information for
+19K methods. I measure with `htop`, manually. If you know a better way to
+measure RAM, please drop a letter here: `silin@kyrylo.org`.
 
 API
 ---
@@ -261,13 +261,6 @@ may work.
 Roadmap
 -------
 
-### Further Speed Improvements
-
-Although Fast Method Source is faster than any of its competitors, it's still
-very slow. On average, a mature Rails 4 application has at least 45K
-methods. The goal of the project is to be able to query 50K methods in less than
-15 seconds.
-
 ### Optional Memoization
 
 I'm not sure about this, if it's really needed, but it will speed up further
@@ -277,6 +270,8 @@ should be optional and configurable like this:
 ```ruby
 FastMethodSource.memoization = true # or `false`
 ```
+
+So far I'm happy about the speed of the library.
 
 Licence
 -------
