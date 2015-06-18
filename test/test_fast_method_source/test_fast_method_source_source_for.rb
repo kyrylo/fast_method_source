@@ -69,7 +69,7 @@ class TestFastMethodSource < Minitest::Test
     require 'irb'
 
     method = IRB::ExtendCommandBundle.instance_method(:irb_change_workspace)
-    expected = /def \#{cmd_name}\(\*opts, &b\).+\*opts, &b\n\s+end\n\z/m
+    expected = /def \#{cmd_name}\(\*opts, &b\).+\n\s+end\n\z/m
     assert_match(expected, FastMethodSource.source_for(method))
   end
 
@@ -78,8 +78,7 @@ class TestFastMethodSource < Minitest::Test
 
     method = Time.instance_method(:w3cdtf)
     expected = /def w3cdtf\n      if usec.zero\?\n.+end\n\z/m
-    assert_match(expected,
-                 FastMethodSource.source_for(method))
+    assert_match(expected, FastMethodSource.source_for(method))
   end
 
   def test_source_for_kernel_require
