@@ -9,7 +9,7 @@
 Description
 -----------
 
-Fast Method Source is a Ruby library for quering methods, procs and lambdas for
+Fast Method Source is a Ruby library for querying methods, procs and lambdas for
 their source code and comments.
 
 ```ruby
