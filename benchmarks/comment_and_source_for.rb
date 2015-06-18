@@ -1,11 +1,9 @@
 require_relative 'bench_helper'
 
-method_list = SystemNavigation.new.all_methods.select do |method|
-  if method.source_location
-    begin
-      FastMethodSource.comment_and_source_for(method)
-    rescue FastMethodSource::SourceNotFoundError, IOError
-    end
+method_list = SystemNavigation.new.all_rb_methods.select do |method|
+  begin
+    FastMethodSource.comment_and_source_for(method)
+  rescue FastMethodSource::SourceNotFoundError, IOError
   end
 end
 
