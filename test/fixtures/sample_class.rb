@@ -11,6 +11,20 @@ class SampleClass
 
   def one_line_method; 1; end
 
+  ##
+  # When RubyGems is required, Kernel#require is replaced with our own which
+  # is capable of loading gems on demand.
+  #
+  # When you call <tt>require 'x'</tt>, this is what happens:
+  # * If the file can be loaded from the existing Ruby loadpath, it
+  #   is.
+  # * Otherwise, installed gems are searched for a file that matches.
+  #   If it's found in gem 'y', that gem is activated (added to the
+  #   loadpath).
+  #
+  # The normal <tt>require</tt> functionality of returning false if
+  # that file has already been loaded is preserved.
+
   def kernel_require path
     RUBYGEMS_ACTIVATION_MONITOR.enter
 
