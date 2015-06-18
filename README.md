@@ -4,30 +4,7 @@
 [![Build Status](https://travis-ci.org/kyrylo/fast_method_source.svg?branch=master)](https://travis-ci.org/kyrylo/fast_method_source)
 
 * Repository: [https://github.com/kyrylo/fast_method_source/][repo]
-
-Table of Contents
------------------
-
-* <a href="#description">Description</a>
-* <a href="#installation">Installation</a>
-* <a href="#synopsis">Synopsis</a>
-    * <a href="#speed-improvements">Speed Improvements</a>
-        * <a href="#source">#source</a>
-        * <a href="#comment">#comment</a>
-        * <a href="#source-and-comment">#source_and_comment</a>
-    * <a href="#correctness-of-output">Correctness Of Output</a>
-    * <a href="#ram-consumption">RAM Consumption</a>
-* <a href="#api">API</a>
-    * <a href="#method-information">Method Information</a>
-        * <a href="#fastmethodsourcesource_formethod">FastMethodSource#source_for(method)</a>
-        * <a href="#fastmethodsourcecomment_formethod">FastMethodSource#comment_for(method)</a>
-        * <a href="#fastmethodsourcecomment_and_source_formethod">FastMethodSource#comment_and_source_for(method)</a>
-* <a href="#limitations">Limitations</a>
-  * <a href="#rubies">Rubies</a>
-  * <a href="#operation-systems">Operation Systems</a>
-* <a href="#roadmap">Roadmap</a>
-  * <a href="#optional-memoization">Optional Memoization</a>
-* <a href="#licence">Licence</a>
+* API description: [/docs][/docs]
 
 Description
 -----------
@@ -57,29 +34,10 @@ Output.
   end
 ```
 
-Installation
-------------
-
-All you need is to install the gem.
-
-    gem install fast_method_source
-
-Synopsis
---------
-
-Fast Method Source provides functionality similar to [method_source][ms], which
-powers [Pry](https://github.com/pry/pry)'s `show-source`, `show-comment` and
-`find-method` commands, but with a number of key differences that are listed
-below.
-
-### Speed Improvements
-
-The main goal of Fast Method Source is to retrieve information as fast as
-possible. In result, the library is extremely fast and is capable of quering
-thousands of methods in a couple of seconds. The benchmarks included in this
-repository show that Fast Method Source outpaces method_source in every aspect
-by far. The results from those benchmarks below show the comparison of these
-libraries.
+Fast Method Source provides functionality similar to [method_source][ms].
+However, it is significantly faster. It can show the source for 19K methods in
+roughly a second, while method_source takes about 30 seconds. The benchmarks
+below show the difference expressed in numbers.
 
 #### #source
 ##### ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
@@ -135,38 +93,13 @@ Sample methods: 19435
 FastMethodSource#comment_and_source_for  0.810000   0.420000   1.230000 (  1.374435)
 ```
 
-### Correctness Of Output
+Installation
+------------
 
-Fast Method Source is capable of displaying source code even for dynamically
-defined methods.
+All you need is to install the gem.
 
-```ruby
-require 'fast_method_source'
-require 'rss'
+    gem install fast_method_source
 
-puts RSS::Maker::ChannelBase.instance_method(:dc_description=).source
-```
-
-Output.
-
-```
-            def #{name}=(#{new_value_variable_name})
-              #{local_variable_name} =
-                #{plural_name}.first || #{plural_name}.new_#{new_name}
-              #{additional_setup_code}
-              #{local_variable_name}.#{attribute} = #{new_value_variable_name}
-            end
-```
-
-That said, you need to be cautious, because sometimes it's not working as
-expected. Feel free to file issues.
-
-### RAM Consumption
-
-The [`comment_and_source`](/benchmarks/comment_and_source_for.rb) benchmark
-shows that the library uses about 10 MB of RES RAM for computing information for
-19K methods. I measure with `htop`, manually. If you know a better way to
-measure RAM, please drop a letter here: `silin@kyrylo.org`.
 
 Limitations
 -----------
@@ -184,21 +117,6 @@ may work.
 
 * GNU/Linux
 * Mac OS (hopefully)
-
-Roadmap
--------
-
-### Optional Memoization
-
-I'm not sure about this, if it's really needed, but it will speed up further
-queries greatly (at the cost of RAM). At this moment I think if I add it, it
-should be optional and configurable like this:
-
-```ruby
-FastMethodSource.memoization = true # or `false`
-```
-
-So far I'm happy about the speed of the library.
 
 Licence
 -------
