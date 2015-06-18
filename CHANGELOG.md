@@ -1,6 +1,12 @@
 Fast Method Source changelog
 ============================
 
+### v0.4.0 (June 18, 2015)
+
+* _Significantly_ improve speed of both `#soruce` and `#comment`. The trade-off
+is that you must indent methods properly.
+* Decrease memeory consumption
+
 ### v0.3.1 (June 11, 2015)
 
 * Considerable speed improvements
