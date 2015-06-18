@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/kyrylo/fast_method_source.svg?branch=master)](https://travis-ci.org/kyrylo/fast_method_source)
 
 * Repository: [https://github.com/kyrylo/fast_method_source/][repo]
-* API description: [https://github.com/kyrylo/fast_method_source/blob/master/docs/API.md](https://github.com/kyrylo/fast_method_source/blob/master/docs/API.md)
+* API description: [https://github.com/kyrylo/fast_method_source/blob/master/docs/API.md][apimd]
 
 Description
 -----------
@@ -93,6 +93,11 @@ Sample methods: 19435
 FastMethodSource#comment_and_source_for  0.810000   0.420000   1.230000 (  1.374435)
 ```
 
+API
+---
+
+Read here: [https://github.com/kyrylo/fast_method_source/blob/master/docs/API.md][apimd]
+
 Installation
 ------------
 
@@ -125,3 +130,4 @@ The project uses Zlib License. See the LICENCE.txt file for more information.
 
 [repo]: https://github.com/kyrylo/fast_method_source/ "Home page"
 [ms]: https://github.com/banister/method_source
+[apimd]: https://github.com/kyrylo/fast_method_source/blob/master/docs/API.md
