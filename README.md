@@ -1,6 +1,8 @@
 <a name="Back_to_top">
 # Fast Method Source
 
+[![Build Status](https://travis-ci.org/kyrylo/fast_method_source.svg?branch=master)](https://travis-ci.org/kyrylo/fast_method_source)
+
 * Repository: [https://github.com/kyrylo/fast_method_source/][repo]
 
 Table of Contents
